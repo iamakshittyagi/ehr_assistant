@@ -1,1217 +1,721 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EHR Assistant</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --neon: #b8f5b0;
-            --neon-bright: #d4ffcc;
-            --neon-dim: #6bbf63;
-            --neon-glow: rgba(184, 245, 176, 0.15);
-            --neon-glow-strong: rgba(184, 245, 176, 0.35);
-            --bg: #050a05;
-            --bg2: #0a120a;
-            --bg3: #0f1a0f;
-            --border: rgba(184, 245, 176, 0.18);
-            --border-bright: rgba(184, 245, 176, 0.5);
-            --text-muted: rgba(184, 245, 176, 0.45);
-            --danger: #ff5c5c;
-            --warning: #ffd166;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background: var(--bg);
-            color: var(--neon);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Scanline overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0,0,0,0.08) 2px,
-                rgba(0,0,0,0.08) 4px
-            );
-            pointer-events: none;
-            z-index: 9999;
-        }
-
-        /* Grid background */
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(184,245,176,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(184,245,176,0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .wrapper {
-            position: relative;
-            z-index: 1;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 24px 60px;
-        }
-
-        /* ── HEADER ── */
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 28px 0 32px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 36px;
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-
-        .logo-icon {
-            width: 52px;
-            height: 52px;
-            background: var(--neon-glow);
-            border: 1px solid var(--border-bright);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 0 20px var(--neon-glow), inset 0 0 20px var(--neon-glow);
-        }
-
-        .logo-text {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .logo-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 22px;
-            font-weight: 900;
-            letter-spacing: 4px;
-            color: var(--neon-bright);
-            text-shadow: 0 0 20px var(--neon), 0 0 40px var(--neon-dim);
-            line-height: 1;
-        }
-
-        .logo-subtitle {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 11px;
-            color: var(--text-muted);
-            letter-spacing: 3px;
-            margin-top: 5px;
-        }
-
-        .header-stats {
-            display: flex;
-            gap: 24px;
-        }
-
-        .stat-pill {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 11px;
-            color: var(--text-muted);
-            background: var(--neon-glow);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 6px 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .stat-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--neon);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--neon); }
-            50% { opacity: 0.4; box-shadow: none; }
-        }
-
-        /* ── LAYOUT ── */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        @media (max-width: 900px) {
-            .grid { grid-template-columns: 1fr; }
-        }
-
-        /* ── PANELS ── */
-        .panel {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .panel::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--neon-dim), transparent);
-        }
-
-        .panel-header {
-            padding: 20px 24px 16px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .panel-header h2 {
-            font-family: 'Orbitron', monospace;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            color: var(--neon-bright);
-            text-transform: uppercase;
-        }
-
-        .panel-badge {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            color: var(--bg);
-            background: var(--neon-dim);
-            border-radius: 4px;
-            padding: 2px 8px;
-            letter-spacing: 1px;
-        }
-
-        .panel-body {
-            padding: 24px;
-        }
-
-        /* ── SECTION LABEL ── */
-        .section-label {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            letter-spacing: 3px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        /* ── INPUTS ── */
-        input, textarea, select {
-            width: 100%;
-            background: var(--bg3);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--neon);
-            font-family: 'Inter', sans-serif;
-            font-size: 13px;
-            padding: 10px 14px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            resize: vertical;
-        }
-
-        input::placeholder, textarea::placeholder {
-            color: var(--text-muted);
-            font-size: 12px;
-        }
-
-        input:focus, textarea:focus {
-            border-color: var(--neon-dim);
-            box-shadow: 0 0 0 3px var(--neon-glow);
-        }
-
-        input[type="file"] {
-            cursor: pointer;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 11px;
-        }
-
-        input[type="file"]::-webkit-file-upload-button {
-            background: var(--neon-glow);
-            border: 1px solid var(--border-bright);
-            color: var(--neon);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            padding: 5px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            letter-spacing: 1px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        /* ── BUTTONS ── */
-        .btn {
-            width: 100%;
-            padding: 11px 20px;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Orbitron', monospace;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(rgba(255,255,255,0.05), transparent);
-            pointer-events: none;
-        }
-
-        .btn-primary {
-            background: var(--neon);
-            color: var(--bg);
-            box-shadow: 0 0 20px rgba(184,245,176,0.3);
-        }
-
-        .btn-primary:hover {
-            background: var(--neon-bright);
-            box-shadow: 0 0 30px rgba(184,245,176,0.5);
-            transform: translateY(-1px);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--neon);
-            border: 1px solid var(--border-bright);
-        }
-
-        .btn-outline:hover {
-            background: var(--neon-glow);
-            box-shadow: 0 0 15px var(--neon-glow);
-        }
-
-        .btn-ghost {
-            background: var(--neon-glow);
-            color: var(--neon);
-            border: 1px solid var(--border);
-        }
-
-        .btn-ghost:hover {
-            border-color: var(--neon-dim);
-            box-shadow: 0 0 12px var(--neon-glow);
-        }
-
-        .btn-danger {
-            background: transparent;
-            color: var(--danger);
-            border: 1px solid rgba(255,92,92,0.3);
-            font-size: 9px;
-            padding: 6px 10px;
-            width: auto;
-        }
-
-        .btn-danger:hover {
-            background: rgba(255,92,92,0.1);
-        }
-
-        .btn-sm {
-            padding: 7px 14px;
-            font-size: 9px;
-            width: auto;
-        }
-
-        .btn-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        /* ── TRANSCRIPT BOX ── */
-        .transcript-box {
-            background: var(--bg3);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 14px;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 12px;
-            color: var(--neon);
-            min-height: 80px;
-            line-height: 1.6;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .transcript-box textarea {
-            background: transparent;
-            border: none;
-            padding: 0;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 12px;
-            min-height: 70px;
-            line-height: 1.6;
-        }
-
-        .transcript-box textarea:focus {
-            border: none;
-            box-shadow: none;
-        }
-
-        /* ── CONFIDENCE BAR ── */
-        .confidence-wrap {
-            background: var(--bg3);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 14px;
-            margin-bottom: 12px;
-            display: none;
-        }
-
-        .confidence-label {
-            display: flex;
-            justify-content: space-between;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-        }
-
-        .confidence-bar-bg {
-            height: 4px;
-            background: var(--bg);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .confidence-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--neon-dim), var(--neon));
-            border-radius: 2px;
-            transition: width 0.6s ease;
-            box-shadow: 0 0 8px var(--neon);
-        }
-
-        /* ── RECORDS LIST ── */
-        .search-bar {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .search-bar input {
-            padding-left: 36px;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 12px;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-
-        .records-scroll {
-            max-height: 560px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) transparent;
-        }
-
-        .record-card {
-            background: var(--bg3);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .record-card::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 3px;
-            background: var(--neon-dim);
-            border-radius: 2px 0 0 2px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .record-card:hover {
-            border-color: var(--neon-dim);
-            box-shadow: 0 0 12px var(--neon-glow);
-        }
-
-        .record-card:hover::before { opacity: 1; }
-
-        .record-card.today {
-            border-color: rgba(184,245,176,0.35);
-        }
-
-        .record-card.today::before { opacity: 1; }
-
-        .record-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 6px;
-        }
-
-        .record-name {
-            font-family: 'Orbitron', monospace;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--neon-bright);
-            letter-spacing: 1px;
-        }
-
-        .record-meta {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-
-        .tag {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 9px;
-            letter-spacing: 1px;
-            padding: 2px 7px;
-            border-radius: 3px;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-        }
-
-        .tag.today-tag {
-            border-color: rgba(184,245,176,0.4);
-            color: var(--neon);
-            background: var(--neon-glow);
-        }
-
-        .record-diag {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .record-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .record-date {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            color: var(--text-muted);
-        }
-
-        /* ── MODAL ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(5,10,5,0.85);
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: var(--bg2);
-            border: 1px solid var(--border-bright);
-            border-radius: 16px;
-            padding: 32px;
-            width: 90%;
-            max-width: 560px;
-            max-height: 85vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 0 60px var(--neon-glow);
-        }
-
-        .modal::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--neon), transparent);
-        }
-
-        .modal-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 16px;
-            font-weight: 900;
-            color: var(--neon-bright);
-            letter-spacing: 3px;
-            margin-bottom: 24px;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 18px; right: 18px;
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            width: 30px; height: 30px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .modal-close:hover {
-            color: var(--neon);
-            border-color: var(--neon-dim);
-        }
-
-        .detail-row {
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 8px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-            align-items: start;
-        }
-
-        .detail-key {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            color: var(--text-muted);
-            letter-spacing: 2px;
-            padding-top: 2px;
-        }
-
-        .detail-val {
-            font-size: 13px;
-            color: var(--neon);
-            line-height: 1.5;
-        }
-
-        .pill-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .pill {
-            background: var(--neon-glow);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 3px 10px;
-            font-size: 11px;
-            font-family: 'Share Tech Mono', monospace;
-            color: var(--neon);
-        }
-
-        /* ── TOAST ── */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 2000;
-            background: var(--bg2);
-            border: 1px solid var(--neon-dim);
-            border-radius: 10px;
-            padding: 14px 20px;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 12px;
-            color: var(--neon);
-            box-shadow: 0 0 30px var(--neon-glow);
-            transform: translateY(80px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            max-width: 320px;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.error {
-            border-color: var(--danger);
-            color: var(--danger);
-            box-shadow: 0 0 20px rgba(255,92,92,0.2);
-        }
-
-        /* ── LOADING ── */
-        .loader {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid var(--border);
-            border-top-color: var(--neon);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ── EMPTY STATE ── */
-        .empty-state {
-            text-align: center;
-            padding: 48px 20px;
-            color: var(--text-muted);
-        }
-
-        .empty-state .icon {
-            font-size: 40px;
-            margin-bottom: 12px;
-            opacity: 0.4;
-        }
-
-        .empty-state p {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 2px;
-        }
-
-        /* ── RECORDING INDICATOR ── */
-        .rec-indicator {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            background: rgba(255,92,92,0.08);
-            border: 1px solid rgba(255,92,92,0.3);
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-
-        .rec-indicator.active { display: flex; }
-
-        .rec-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--danger);
-            border-radius: 50%;
-            animation: pulse-red 1s infinite;
-        }
-
-        @keyframes pulse-red {
-            0%,100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .rec-text {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 11px;
-            color: var(--danger);
-            letter-spacing: 2px;
-        }
-
-        /* ── DIVIDER ── */
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 16px 0;
-        }
-
-        /* ── SCROLL CUSTOM ── */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-        /* ── ANIMATIONS ── */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .panel {
-            animation: fadeInUp 0.4s ease both;
-        }
-
-        .panel:nth-child(2) {
-            animation-delay: 0.1s;
-        }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EHR Assistant</title>
+<link rel="icon" type="image/png" href="./assets/art_logo.png" sizes="64x64">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #2d9e94;
+  --teal-d: #237d75;
+  --teal-l: #3bbcb1;
+  --teal-bg: rgba(45,158,148,0.08);
+  --teal-bd: rgba(45,158,148,0.22);
+  --teal-text: #1a6b63;
+  --text: #0f1f1e;
+  --text2: #3a5250;
+  --muted: #7a9896;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.12);
+  --bg: #f4faf9;
+  --bg2: #ffffff;
+  --bg3: #edf7f6;
+  --card: #ffffff;
+  --danger: #e03f3f;
+  --danger-bg: rgba(224,63,63,0.07);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+h1,h2,h3,h4,h5{font-family:'Plus Jakarta Sans',sans-serif;}
+
+/* ── NAV ── */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:72px;padding:0 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:transparent;
+  transition:background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  border-bottom:1px solid transparent;
+}
+#nav.scrolled{
+  background:rgba(244,250,249,0.94);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--teal-bd);
+  box-shadow:0 1px 0 rgba(0,0,0,0.05);
+}
+.nav-logo img{height:44px;object-fit:contain;}
+.nav-pill{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.32);
+  border-radius:100px;padding:7px 18px;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.10em;
+  color:#fff;font-weight:500;
+  backdrop-filter:blur(12px);
+  transition:background 0.3s, border-color 0.3s, color 0.3s;
+}
+#nav.scrolled .nav-pill{
+  background:var(--teal-bg);border-color:var(--teal-bd);color:var(--teal-text);
+}
+.pd{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px rgba(45,158,148,0.7);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 5px rgba(45,158,148,0.6)}50%{box-shadow:0 0 14px rgba(45,158,148,1),0 0 24px rgba(45,158,148,0.3)}}
+
+/* ── HERO ── */
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;align-items:center;overflow:hidden;
+  background:linear-gradient(135deg,#e8f8f7 0%,#f4faf9 40%,#edf7f6 100%);
+}
+#bgv{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;z-index:0;
+  opacity:0.75;filter:brightness(0.88) saturate(1.05);
+}
+.hero-ov{
+  position:absolute;inset:0;z-index:1;
+  background:
+    linear-gradient(to right, rgba(244,250,249,0.78) 0%, rgba(244,250,249,0.42) 48%, rgba(244,250,249,0.08) 100%),
+    linear-gradient(to bottom, rgba(244,250,249,0.18) 0%, transparent 30%, rgba(244,250,249,0.22) 100%);
+}
+.hero-in{
+  position:relative;z-index:2;
+  width:100%;max-width:1280px;margin:0 auto;
+  padding:108px 48px 80px;
+  display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;
+}
+@media(max-width:960px){
+  .hero-in{grid-template-columns:1fr;padding:96px 24px 60px;}
+}
+
+/* hero left */
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--teal-bg);border:1px solid var(--teal-bd);
+  border-radius:100px;padding:6px 16px;
+  font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--teal-text);margin-bottom:24px;
+}
+.hero-h1{
+  font-size:clamp(36px,5vw,72px);font-weight:800;
+  line-height:1.01;letter-spacing:-0.03em;color:var(--text);margin-bottom:18px;
+}
+.hero-h1 .ac{
+  background:linear-gradient(135deg,var(--teal) 0%,#1a9e93 50%,var(--teal-l) 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:gs 4s linear infinite;
+}
+@keyframes gs{0%{background-position:0% center}100%{background-position:200% center}}
+.hero-sub{font-size:15px;color:var(--text2);line-height:1.72;margin-bottom:32px;max-width:420px;}
+.stats{display:flex;gap:36px;}
+.sv{font-family:'DM Mono',monospace;font-size:24px;color:var(--teal);display:block;font-weight:500;}
+.sl{font-size:9.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ── CARD ── */
+.card{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:20px;overflow:hidden;position:relative;
+  box-shadow:0 4px 24px rgba(0,0,0,0.06),0 1px 4px rgba(0,0,0,0.04);
+  animation:fu 0.5s ease both;
+}
+.card:nth-child(2){animation-delay:0.08s;}
+@keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);}
+
+.ch{
+  padding:18px 24px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:9px;
+  background:linear-gradient(to bottom,var(--bg3),var(--card));
+}
+.ch h3{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal-text);}
+.cbadge{margin-left:auto;font-family:'DM Mono',monospace;font-size:9px;color:var(--teal-text);background:var(--teal-bg);border:1px solid var(--teal-bd);border-radius:4px;padding:2px 9px;letter-spacing:0.06em;}
+.cb{padding:24px;}
+
+/* ── FORM ── */
+.sep{display:flex;align-items:center;gap:10px;margin:16px 0 10px;}
+.sep span{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.sep::after{content:'';flex:1;height:1px;background:var(--border);}
+.dv{height:1px;background:var(--border);margin:16px 0;}
+.ig{margin-bottom:10px;}
+
+input[type=text],input[type=file],textarea{
+  width:100%;
+  background:var(--bg);
+  border:1px solid var(--border2);
+  border-radius:10px;color:var(--text);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;
+  padding:9px 13px;outline:none;transition:all 0.2s;resize:vertical;
+}
+input::placeholder,textarea::placeholder{color:var(--muted);font-size:12px;}
+input:focus,textarea:focus{border-color:var(--teal-bd);background:#fff;box-shadow:0 0 0 3px rgba(45,158,148,0.10);}
+input[type=file]{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;background:var(--bg3);}
+input[type=file]::-webkit-file-upload-button{
+  background:var(--teal-bg);border:1px solid var(--teal-bd);
+  color:var(--teal-text);font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:0.08em;
+  padding:4px 11px;border-radius:5px;cursor:pointer;transition:background 0.2s;
+}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+
+.tx{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:2px;margin-bottom:10px;}
+.tx textarea{background:transparent;border:none;border-radius:8px;font-family:'DM Mono',monospace;font-size:12px;min-height:74px;line-height:1.65;color:var(--text2);}
+.tx textarea:focus{box-shadow:none;border:none;}
+
+.conf-w{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:10px;display:none;}
+.conf-l{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:7px;letter-spacing:0.08em;}
+.conf-bg{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.conf-f{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-l));border-radius:2px;transition:width 0.6s ease;}
+
+/* ── BUTTONS ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border:none;border-radius:10px;font-family:'DM Mono',monospace;font-size:9.5px;font-weight:500;letter-spacing:0.10em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;width:100%;}
+.bt{background:var(--teal);color:#fff;box-shadow:0 2px 12px rgba(45,158,148,0.28);}
+.bt:hover{background:var(--teal-d);box-shadow:0 4px 20px rgba(45,158,148,0.38);transform:translateY(-1px);}
+.bo{background:var(--teal-bg);color:var(--teal-text);border:1px solid var(--teal-bd);}
+.bo:hover{background:rgba(45,158,148,0.14);}
+.bo.rec-active{background:rgba(224,63,63,0.08);color:var(--danger);border-color:rgba(224,63,63,0.25);}
+.bd{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(224,63,63,0.20);font-size:9px;padding:7px 12px;width:auto;}
+.bd:hover{background:rgba(224,63,63,0.14);}
+.br{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
+
+/* ── RECORDING INDICATOR ── */
+.ri{display:none;align-items:center;gap:8px;padding:8px 13px;background:var(--danger-bg);border:1px solid rgba(224,63,63,0.20);border-radius:8px;margin-bottom:10px;}
+.ri.on{display:flex;}
+.rd{width:7px;height:7px;border-radius:50%;background:var(--danger);animation:rp 1s infinite;}
+@keyframes rp{0%,100%{opacity:1}50%{opacity:0.2}}
+.rt{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--danger);letter-spacing:0.10em;}
+.rtime{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--danger);margin-left:auto;letter-spacing:0.05em;}
+
+/* ── PROCESSING ── */
+.proc{display:none;align-items:center;gap:8px;padding:7px 12px;background:var(--teal-bg);border:1px solid var(--teal-bd);border-radius:8px;margin-bottom:10px;}
+.proc.on{display:flex;}
+.proc span{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--teal-text);letter-spacing:0.10em;}
+.spin{width:12px;height:12px;border:2px solid var(--teal-bd);border-top-color:var(--teal);border-radius:50%;animation:sp 0.7s linear infinite;flex-shrink:0;}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── RECORDS ── */
+.mw{max-width:1280px;margin:0 auto;padding:72px 48px 56px;}
+@media(max-width:640px){.mw{padding:60px 20px 40px;}}
+.sw{position:relative;margin-bottom:14px;}
+.sw input{padding-left:36px;font-family:'DM Mono',monospace;font-size:12px;}
+.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.rs{max-height:560px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--teal-bd) transparent;}
+.rc{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.rc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--teal);border-radius:2px 0 0 2px;opacity:0;transition:opacity 0.2s;}
+.rc:hover{border-color:var(--teal-bd);background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.rc:hover::before,.rc.today::before{opacity:1;}
+.rc.today{border-color:var(--teal-bd);background:#fff;}
+.rt2{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+.rn{font-size:13px;font-weight:700;color:var(--text);}
+.rtags{display:flex;gap:4px;}
+.tag{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:0.05em;padding:2px 7px;border-radius:3px;border:1px solid var(--border2);color:var(--muted);}
+.tag.t{border-color:var(--teal-bd);color:var(--teal-text);background:var(--teal-bg);}
+.rdiag{font-size:11.5px;color:var(--text2);margin-bottom:5px;}
+.rfoot{display:flex;}
+.rdate{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--muted);}
+.empty{text-align:center;padding:52px 20px;}
+.empty .ei{margin:0 auto 14px;opacity:0.25;}
+.empty p{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);}
+
+/* ── MODAL ── */
+.mbg{display:none;position:fixed;inset:0;background:rgba(15,31,30,0.45);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;}
+.mbg.on{display:flex;}
+.modal{background:#fff;border:1px solid var(--border2);border-radius:20px;padding:30px;width:90%;max-width:500px;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 24px 60px rgba(0,0,0,0.15);}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);}
+.mttl{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;letter-spacing:0.10em;text-transform:uppercase;color:var(--teal-text);margin-bottom:20px;}
+.mx{position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.mx:hover{color:var(--text);border-color:var(--border2);}
+.dr{display:grid;grid-template-columns:100px 1fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);align-items:start;}
+.dk{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;padding-top:2px;}
+.dvv{font-size:12.5px;color:var(--text);line-height:1.5;}
+.pills{display:flex;flex-wrap:wrap;gap:5px;}
+.pill{background:var(--teal-bg);border:1px solid var(--teal-bd);border-radius:4px;padding:2px 9px;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--teal-text);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:26px;right:26px;z-index:2000;background:#fff;border:1px solid var(--teal-bd);border-radius:12px;padding:11px 17px;font-family:'DM Mono',monospace;font-size:11px;color:var(--teal-text);box-shadow:0 4px 24px rgba(0,0,0,0.10);transform:translateY(50px);opacity:0;transition:all 0.3s;display:flex;align-items:center;gap:9px;}
+.toast.on{transform:translateY(0);opacity:1;}
+.toast.err{border-color:rgba(224,63,63,0.35);color:var(--danger);}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);background:var(--bg2);padding:28px 48px;}
+.fi{max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
+.fl img{height:30px;object-fit:contain;}
+.fc{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--muted);margin-top:5px;letter-spacing:0.05em;}
+.gh{display:inline-flex;align-items:center;gap:8px;background:var(--teal-bg);border:1px solid var(--teal-bd);border-radius:100px;padding:7px 16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--teal-text);text-decoration:none;letter-spacing:0.06em;transition:all 0.2s;font-weight:500;}
+.gh:hover{background:rgba(45,158,148,0.14);transform:translateY(-1px);}
+
+/* ────────────────────────────
+   MOBILE RESPONSIVE
+   ──────────────────────────── */
+@media(max-width:640px){
+
+  /* nav */
+  #nav{height:60px;padding:0 20px;}
+  .nav-logo img{height:34px;}
+  .nav-pill{padding:5px 12px;font-size:9px;letter-spacing:0.08em;}
+
+  /* hero — video visible on mobile with readable overlay */
+  .hero{min-height:100svh;align-items:flex-start;}
+  #bgv{display:block;opacity:0.55;filter:brightness(0.85) saturate(1.0);}
+  .hero-ov{
+    background:
+      linear-gradient(to bottom, rgba(244,250,249,0.72) 0%, rgba(244,250,249,0.45) 50%, rgba(244,250,249,0.65) 100%);
+  }
+  .hero-in{
+    grid-template-columns:1fr;
+    gap:24px;
+    padding:80px 20px 40px;
+    align-items:start;
+  }
+
+  /* hero text */
+  .eyebrow{font-size:8.5px;padding:5px 12px;margin-bottom:14px;}
+  .hero-h1{font-size:34px;margin-bottom:12px;}
+  .hero-sub{font-size:14px;margin-bottom:20px;max-width:100%;}
+  .stats{gap:20px;margin-bottom:4px;}
+  .sv{font-size:20px;}
+  .sl{font-size:8.5px;}
+
+  /* card */
+  .card{border-radius:16px;}
+  .ch{padding:14px 16px 12px;}
+  .cb{padding:16px;}
+
+  /* form grids collapse to 1 col */
+  .g3{grid-template-columns:1fr;}
+  .g2{grid-template-columns:1fr;}
+
+  /* 3-btn row → stack vertically */
+  .br{grid-template-columns:1fr;gap:8px;}
+
+  /* records section */
+  .mw{padding:28px 16px 40px;}
+  .rs{max-height:420px;}
+
+  /* modal */
+  .modal{padding:20px 18px;border-radius:16px;width:96%;max-height:90vh;}
+  .mttl{font-size:11px;margin-bottom:16px;}
+  .dr{grid-template-columns:76px 1fr;gap:6px;padding:8px 0;}
+  .dk{font-size:8px;}
+  .dvv{font-size:12px;}
+
+  /* toast — full width at bottom */
+  .toast{
+    bottom:16px;right:16px;left:16px;
+    font-size:10.5px;padding:10px 14px;
+    border-radius:10px;
+  }
+
+  /* footer */
+  footer{padding:20px;}
+  .fi{flex-direction:column;align-items:flex-start;gap:12px;}
+  .fl img{height:26px;}
+  .gh{font-size:9.5px;padding:6px 13px;}
+}
+
+/* very small phones */
+@media(max-width:380px){
+  .hero-h1{font-size:28px;}
+  .btn{font-size:9px;padding:9px 12px;}
+  .eyebrow{font-size:8px;}
+}
+</style>
 </head>
 <body>
 
-<div class="wrapper">
-    <!-- HEADER -->
-    <header>
-        <div class="logo-area">
-            <div class="logo-icon">⚕</div>
-            <div class="logo-text">
-                <div class="logo-title">E·H·R ASSISTANT</div>
-                <div class="logo-subtitle">ELECTRONIC HEALTH RECORDS · v2.0</div>
-            </div>
-        </div>
-        <div class="header-stats">
-            <div class="stat-pill">
-                <div class="stat-dot"></div>
-                <span id="totalCount">0 RECORDS</span>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-dot"></div>
-                <span id="todayCount">0 TODAY</span>
-            </div>
-        </div>
-    </header>
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">
+    <a href="#ehr" style="display:inline-block;line-height:0;">
+      <img src="./assets/name_logo.png" alt="EHR Assistant"
+        onerror="this.src='./assets/name_logo_green.png'">
+    </a>
+  </div>
+</nav>
 
-    <div class="grid">
+<!-- HERO -->
+<section class="hero" id="ehr">
+  <video id="bgv" autoplay muted loop playsinline>
+    <source src="./assets/home.mp4" type="video/mp4">
+  </video>
+  <div class="hero-ov"></div>
 
-        <!-- LEFT PANEL: NEW RECORD -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2>New Record</h2>
-                <span class="panel-badge">INPUT</span>
-            </div>
-            <div class="panel-body">
+  <div class="hero-in">
 
-                <!-- AUDIO SECTION -->
-                <div class="section-label">Audio Input</div>
-                <div class="form-group">
-                    <input type="file" id="audioFile" accept="audio/*">
-                </div>
-
-                <div class="rec-indicator" id="recIndicator">
-                    <div class="rec-dot"></div>
-                    <span class="rec-text">PROCESSING AUDIO...</span>
-                </div>
-
-                <div class="btn-row">
-                    <button class="btn btn-ghost" onclick="transcribeAudio()">
-                        🎤 <span>TRANSCRIBE</span>
-                    </button>
-                    <button class="btn btn-ghost" onclick="extractFromTranscript()">
-                        ✨ <span>AI EXTRACT</span>
-                    </button>
-                </div>
-
-                <!-- TRANSCRIPT -->
-                <div class="section-label">Transcript</div>
-                <div class="transcript-box form-group">
-                    <textarea id="transcript" placeholder="Paste or transcribe consultation here..."></textarea>
-                </div>
-
-                <!-- CONFIDENCE -->
-                <div class="confidence-wrap" id="confWrap">
-                    <div class="confidence-label">
-                        <span>AI CONFIDENCE</span>
-                        <span id="confVal">0%</span>
-                    </div>
-                    <div class="confidence-bar-bg">
-                        <div class="confidence-bar-fill" id="confBar" style="width:0%"></div>
-                    </div>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- FORM -->
-                <div class="section-label">Patient Info</div>
-                <div class="form-row form-group">
-                    <input type="text" name="patient_name" placeholder="Full Name" id="f_patient_name">
-                    <input type="text" name="age" placeholder="Age" id="f_age">
-                    <input type="text" name="gender" placeholder="Gender" id="f_gender">
-                </div>
-
-                <div class="form-group">
-                    <input type="text" name="doctor_name" placeholder="Doctor Name" id="f_doctor_name">
-                </div>
-
-                <div class="section-label">Clinical Data</div>
-                <div class="form-group">
-                    <textarea name="diagnosis" placeholder="Diagnosis" id="f_diagnosis" rows="2"></textarea>
-                </div>
-                <div class="form-group">
-                    <textarea name="symptoms" placeholder="Symptoms (comma separated)" id="f_symptoms" rows="2"></textarea>
-                </div>
-                <div class="form-group">
-                    <textarea name="treatment" placeholder="Treatment / Prescription (comma separated)" id="f_treatment" rows="2"></textarea>
-                </div>
-
-                <div class="form-row form-group">
-                    <input type="text" name="followup" placeholder="Follow-up" id="f_followup" style="grid-column: span 2">
-                    <input type="text" name="prakriti" placeholder="Prakriti" id="f_prakriti">
-                </div>
-
-                <div class="form-group">
-                    <textarea name="notes" placeholder="Additional Notes" id="f_notes" rows="2"></textarea>
-                </div>
-
-                <button class="btn btn-primary" onclick="saveRecord()">
-                    💾 SAVE RECORD
-                </button>
-
-            </div>
-        </div>
-
-        <!-- RIGHT PANEL: RECORDS -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2>Patient Records</h2>
-                <span class="panel-badge" id="recordBadge">0</span>
-            </div>
-            <div class="panel-body">
-
-                <div class="search-bar">
-                    <span class="search-icon">⌕</span>
-                    <input type="text" id="searchInput" placeholder="Search by name or diagnosis..."
-                        oninput="onSearch(this.value)">
-                </div>
-
-                <div class="records-scroll" id="recordsList">
-                    <div class="empty-state">
-                        <div class="icon">📋</div>
-                        <p>NO RECORDS FOUND</p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
+    <!-- LEFT -->
+    <div>
+      <div class="eyebrow"><div class="pd"></div>Voice to EHR · AI Powered</div>
+      <h1 class="hero-h1">Clinical records,<br><span class="ac">zero friction.</span></h1>
+      <p class="hero-sub">Speak your consultation. AI extracts, structures and stores the complete EHR — in seconds.</p>
+      <div class="stats">
+        <div><span class="sv" id="hTotal">0</span><span class="sl">Records</span></div>
+        <div><span class="sv" id="hToday">0</span><span class="sl">Today</span></div>
+        <div><span class="sv">AI</span><span class="sl">Extraction</span></div>
+      </div>
     </div>
-</div>
+
+    <!-- RIGHT CARD -->
+    <div class="card">
+      <div class="ch">
+        <div class="pd"></div>
+        <h3>New EHR Record</h3>
+      </div>
+      <div class="cb">
+
+        <div class="sep"><span>Audio Input</span></div>
+        <div class="ig"><input type="file" id="audioFile" accept="audio/*"></div>
+
+        <div class="ri" id="rInd">
+          <div class="rd"></div>
+          <span class="rt">Recording...</span>
+          <span class="rtime" id="rTimer">0:00</span>
+        </div>
+
+        <div class="proc" id="procInd">
+          <div class="spin"></div>
+          <span>Processing audio...</span>
+        </div>
+
+        <div class="br">
+          <button class="btn bo" id="recBtn" onclick="toggleRecord()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+            Record
+          </button>
+          <button class="btn bo" onclick="transcribeFile()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            Transcribe
+          </button>
+          <button class="btn bo" onclick="extractFromTranscript()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            AI Extract
+          </button>
+        </div>
+
+        <div class="sep"><span>Transcript</span></div>
+        <div class="tx ig"><textarea id="transcript" placeholder="Paste or record consultation transcript here..."></textarea></div>
+
+        <div class="conf-w" id="confW">
+          <div class="conf-l"><span>AI Confidence</span><span id="confV">0%</span></div>
+          <div class="conf-bg"><div class="conf-f" id="confF" style="width:0%"></div></div>
+        </div>
+
+        <div class="dv"></div>
+
+        <div class="sep"><span>Patient Info</span></div>
+        <div class="g3 ig">
+          <input type="text" id="f_name" placeholder="Full Name">
+          <input type="text" id="f_age" placeholder="Age">
+          <input type="text" id="f_gender" placeholder="Gender">
+        </div>
+        <div class="ig"><input type="text" id="f_doc" placeholder="Doctor Name"></div>
+
+        <div class="sep"><span>Clinical</span></div>
+        <div class="ig"><textarea id="f_diag" placeholder="Diagnosis" rows="2"></textarea></div>
+        <div class="g2 ig">
+          <textarea id="f_sym" placeholder="Symptoms (comma separated)" rows="2"></textarea>
+          <textarea id="f_treat" placeholder="Treatment / Prescription" rows="2"></textarea>
+        </div>
+        <div class="ig"><input type="text" id="f_follow" placeholder="Follow-up"></div>
+        <div class="ig"><textarea id="f_notes" placeholder="Additional notes" rows="2"></textarea></div>
+
+        <button class="btn bt" onclick="saveRecord()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save Record
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- RECORDS -->
+<section class="mw" id="records">
+  <div class="card">
+    <div class="ch">
+      <div class="pd"></div>
+      <h3>Patient Records</h3>
+      <span class="cbadge" id="rBadge">0</span>
+    </div>
+    <div class="cb">
+      <div class="sw">
+        <span class="si">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" id="searchInput" placeholder="Search by name or diagnosis..." oninput="onSearch(this.value)">
+      </div>
+      <div class="rs" id="recList">
+        <div class="empty">
+          <div class="ei">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <p>No records yet</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="fi">
+    <div class="fl">
+      <a href="#ehr" style="display:inline-block;line-height:0;">
+        <img src="./assets/name_logo.png" alt="EHR Assistant" onerror="this.src='./assets/name_logo_green.png'">
+      </a>
+    </div>
+    <a href="https://github.com/iamakshittyagi" target="_blank" class="gh">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      iamakshittyagi
+    </a>
+  </div>
+</footer>
 
 <!-- MODAL -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-    <div class="modal">
-        <button class="modal-close" onclick="closeModalBtn()">✕</button>
-        <div class="modal-title" id="modalTitle">PATIENT RECORD</div>
-        <div id="modalBody"></div>
-        <div style="margin-top:20px;">
-            <button class="btn btn-danger" id="modalDeleteBtn" onclick="deleteFromModal()">
-                🗑 DELETE RECORD
-            </button>
-        </div>
+<div class="mbg" id="mBg" onclick="cMBg(event)">
+  <div class="modal">
+    <button class="mx" onclick="cM()">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="mttl" id="mTtl">Patient Record</div>
+    <div id="mBody"></div>
+    <div style="margin-top:16px;">
+      <button class="btn bd" onclick="delM()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Delete Record
+      </button>
     </div>
+  </div>
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="toast">
-    <span id="toastIcon">✓</span>
-    <span id="toastMsg">Done</span>
-</div>
+<div class="toast" id="toast"><span id="ti">✓</span><span id="tm"></span></div>
 
 <script>
-    let currentModalId = null;
-    let allRecords = [];
-    let searchTimeout = null;
+let cId=null, allR=[], sTO=null;
+let mediaRecorder=null, audioChunks=[], recInterval=null, recSecs=0;
+let isRecording=false;
 
-    // ── TOAST ──
-    function showToast(msg, type = 'success') {
-        const t = document.getElementById('toast');
-        const icon = document.getElementById('toastIcon');
-        const txt = document.getElementById('toastMsg');
-        icon.textContent = type === 'error' ? '✗' : '✓';
-        txt.textContent = msg;
-        t.className = 'toast' + (type === 'error' ? ' error' : '');
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  document.getElementById('ti').textContent=type==='err'?'✗':'✓';
+  document.getElementById('tm').textContent=msg;
+  t.className='toast on'+(type==='err'?' err':'');
+  setTimeout(()=>t.classList.remove('on'),3200);
+}
+
+async function toggleRecord(){
+  if(!isRecording){
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      audioChunks=[];
+      mediaRecorder=new MediaRecorder(stream);
+      mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) audioChunks.push(e.data); };
+      mediaRecorder.onstop=async()=>{
+        stream.getTracks().forEach(t=>t.stop());
+        const blob=new Blob(audioChunks,{type:'audio/webm'});
+        await sendAudioBlob(blob);
+      };
+      mediaRecorder.start();
+      isRecording=true;
+      recSecs=0;
+      document.getElementById('rInd').classList.add('on');
+      const btn=document.getElementById('recBtn');
+      btn.classList.add('rec-active');
+      btn.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="6" width="12" height="12"/></svg> Stop`;
+      recInterval=setInterval(()=>{
+        recSecs++;
+        const m=Math.floor(recSecs/60), s=recSecs%60;
+        document.getElementById('rTimer').textContent=m+':'+(s<10?'0':'')+s;
+      },1000);
+      toast('Recording started...');
+    }catch(e){
+      toast('Microphone access denied','err');
     }
+  } else {
+    mediaRecorder.stop();
+    isRecording=false;
+    clearInterval(recInterval);
+    document.getElementById('rInd').classList.remove('on');
+    const btn=document.getElementById('recBtn');
+    btn.classList.remove('rec-active');
+    btn.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg> Record`;
+    toast('Recording stopped, processing...');
+  }
+}
 
-    // ── TRANSCRIBE ──
-    async function transcribeAudio() {
-        const file = document.getElementById('audioFile').files[0];
-        if (!file) { showToast('Select an audio file first', 'error'); return; }
+async function sendAudioBlob(blob){
+  document.getElementById('procInd').classList.add('on');
+  const fd=new FormData();
+  fd.append('audio',blob,'recording.webm');
+  try{
+    const r=await fetch('/transcribe',{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.text){ document.getElementById('transcript').value=d.text; toast('Transcription done'); }
+    else toast(d.error||'Transcription failed','err');
+  }catch(e){ toast('Server error','err'); }
+  finally{ document.getElementById('procInd').classList.remove('on'); }
+}
 
-        const ind = document.getElementById('recIndicator');
-        ind.classList.add('active');
+async function transcribeFile(){
+  const f=document.getElementById('audioFile').files[0];
+  if(!f){toast('Select an audio file first','err');return;}
+  document.getElementById('procInd').classList.add('on');
+  const fd=new FormData();fd.append('audio',f);
+  try{
+    const r=await fetch('/transcribe',{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.text){document.getElementById('transcript').value=d.text;toast('Transcription done');}
+    else toast(d.error||'Failed','err');
+  }catch(e){toast('Server error','err');}
+  finally{document.getElementById('procInd').classList.remove('on');}
+}
 
-        const formData = new FormData();
-        formData.append('audio', file);
-
-        try {
-            const res = await fetch('/transcribe', { method: 'POST', body: formData });
-            const data = await res.json();
-            if (data.text) {
-                document.getElementById('transcript').value = data.text;
-                showToast('Transcription complete');
-            } else {
-                showToast(data.error || 'Transcription failed', 'error');
-            }
-        } catch (e) {
-            showToast('Server error', 'error');
-        } finally {
-            ind.classList.remove('active');
-        }
+async function extractFromTranscript(){
+  const t=document.getElementById('transcript').value;
+  if(!t.trim()){toast('Enter transcript first','err');return;}
+  toast('AI extracting...');
+  try{
+    const r=await fetch('/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({transcript:t})});
+    const d=await r.json();
+    if(d.error){toast(d.error,'err');return;}
+    document.getElementById('f_name').value=d.patient_name||'';
+    document.getElementById('f_age').value=d.age||'';
+    document.getElementById('f_gender').value=d.gender||'';
+    document.getElementById('f_doc').value=d.doctor_name||'';
+    document.getElementById('f_diag').value=d.diagnosis||'';
+    document.getElementById('f_sym').value=(d.symptoms||[]).join(', ');
+    document.getElementById('f_treat').value=(d.treatment||[]).join(', ');
+    document.getElementById('f_follow').value=d.followup||'';
+    document.getElementById('f_notes').value=d.notes||'';
+    if(d.confidence!==undefined){
+      const p=Math.round(d.confidence*100);
+      document.getElementById('confW').style.display='block';
+      document.getElementById('confV').textContent=p+'%';
+      document.getElementById('confF').style.width=p+'%';
     }
+    toast('Fields extracted');
+  }catch(e){toast('Extraction failed','err');}
+}
 
-    // ── EXTRACT ──
-    async function extractFromTranscript() {
-        const transcript = document.getElementById('transcript').value;
-        if (!transcript.trim()) { showToast('Enter a transcript first', 'error'); return; }
+async function saveRecord(){
+  const p={
+    patient_name:document.getElementById('f_name').value,
+    age:document.getElementById('f_age').value,
+    gender:document.getElementById('f_gender').value,
+    doctor_name:document.getElementById('f_doc').value,
+    diagnosis:document.getElementById('f_diag').value,
+    symptoms:document.getElementById('f_sym').value,
+    treatment:document.getElementById('f_treat').value,
+    followup:document.getElementById('f_follow').value,
+    notes:document.getElementById('f_notes').value,
+  };
+  if(!p.patient_name.trim()){toast('Patient name required','err');return;}
+  try{
+    const r=await fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+    const d=await r.json();
+    if(d.status==='saved'){clrForm();loadR();toast('Record saved');}
+    else toast(d.error||'Save failed','err');
+  }catch(e){toast('Server error','err');}
+}
 
-        showToast('AI extracting fields...');
+function clrForm(){
+  ['f_name','f_age','f_gender','f_doc','f_diag','f_sym','f_treat','f_follow','f_notes']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('transcript').value='';
+  document.getElementById('confW').style.display='none';
+}
 
-        try {
-            const res = await fetch('/extract', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ transcript })
-            });
-            const data = await res.json();
+async function loadR(){
+  try{
+    const r=await fetch('/records');
+    allR=await r.json();
+    renderR(allR);
+    const td=allR.filter(r=>r.is_today).length;
+    document.getElementById('hTotal').textContent=allR.length;
+    document.getElementById('hToday').textContent=td;
+    document.getElementById('rBadge').textContent=allR.length;
+  }catch(e){}
+}
 
-            document.getElementById('f_patient_name').value = data.patient_name || '';
-            document.getElementById('f_age').value = data.age || '';
-            document.getElementById('f_gender').value = data.gender || '';
-            document.getElementById('f_doctor_name').value = data.doctor_name || '';
-            document.getElementById('f_diagnosis').value = data.diagnosis || '';
-            document.getElementById('f_symptoms').value = (data.symptoms || []).join(', ');
-            document.getElementById('f_treatment').value = (data.treatment || []).join(', ');
-            document.getElementById('f_followup').value = data.followup || '';
-            document.getElementById('f_prakriti').value = data.prakriti || '';
-            document.getElementById('f_notes').value = data.notes || '';
+function renderR(recs){
+  const el=document.getElementById('recList');
+  if(!recs.length){
+    el.innerHTML=`<div class="empty"><div class="ei"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><p>No records found</p></div>`;
+    return;
+  }
+  el.innerHTML=recs.map(r=>`
+    <div class="rc ${r.is_today?'today':''}" onclick="openR('${r.id}')">
+      <div class="rt2">
+        <div class="rn">${r.patient_name||'Unknown'}</div>
+        <div class="rtags">
+          ${r.is_today?'<span class="tag t">TODAY</span>':''}
+          ${r.gender?`<span class="tag">${r.gender}</span>`:''}
+          ${r.age?`<span class="tag">${r.age}y</span>`:''}
+        </div>
+      </div>
+      <div class="rdiag">${r.diagnosis||'—'}</div>
+      <div class="rfoot"><span class="rdate">${r.date||''} ${r.doctor_name?'· Dr. '+r.doctor_name:''}</span></div>
+    </div>
+  `).join('');
+}
 
-            if (data.confidence !== undefined) {
-                const pct = Math.round(data.confidence * 100);
-                document.getElementById('confWrap').style.display = 'block';
-                document.getElementById('confVal').textContent = pct + '%';
-                document.getElementById('confBar').style.width = pct + '%';
-            }
+function onSearch(v){
+  clearTimeout(sTO);
+  if(!v.trim()){renderR(allR);return;}
+  sTO=setTimeout(async()=>{
+    const r=await fetch('/search?q='+encodeURIComponent(v));
+    renderR(await r.json());
+  },300);
+}
 
-            showToast('Fields extracted successfully');
-        } catch (e) {
-            showToast('Extraction failed', 'error');
-        }
-    }
+async function openR(id){
+  const r=await fetch('/records/'+id);
+  const d=await r.json();
+  if(d.error){toast('Not found','err');return;}
+  cId=id;
+  document.getElementById('mTtl').textContent=(d.patient_name||'Patient').toUpperCase();
+  const sym=d.symptoms?d.symptoms.split(/[;,]/).map(s=>s.trim()).filter(Boolean):[];
+  const tre=d.treatment?d.treatment.split(/[;,]/).map(s=>s.trim()).filter(Boolean):[];
+  document.getElementById('mBody').innerHTML=`
+    ${fr('Date',d.date||'—')}${fr('Doctor',d.doctor_name||'—')}
+    ${fr('Age / Gender',[d.age,d.gender].filter(Boolean).join(' / ')||'—')}
+    ${fr('Diagnosis',d.diagnosis||'—')}
+    ${sym.length?fp('Symptoms',sym):fr('Symptoms','—')}
+    ${tre.length?fp('Treatment',tre):fr('Treatment','—')}
+    ${d.followup?fr('Follow-up',d.followup):''}
+    ${d.notes?fr('Notes',d.notes):''}
+  `;
+  document.getElementById('mBg').classList.add('on');
+}
 
-    // ── SAVE ──
-    async function saveRecord() {
-        const payload = {
-            patient_name: document.getElementById('f_patient_name').value,
-            age: document.getElementById('f_age').value,
-            gender: document.getElementById('f_gender').value,
-            doctor_name: document.getElementById('f_doctor_name').value,
-            diagnosis: document.getElementById('f_diagnosis').value,
-            symptoms: document.getElementById('f_symptoms').value,
-            treatment: document.getElementById('f_treatment').value,
-            followup: document.getElementById('f_followup').value,
-            prakriti: document.getElementById('f_prakriti').value,
-            notes: document.getElementById('f_notes').value
-        };
+const fr=(k,v)=>`<div class="dr"><div class="dk">${k}</div><div class="dvv">${v}</div></div>`;
+const fp=(k,i)=>`<div class="dr"><div class="dk">${k}</div><div class="dvv"><div class="pills">${i.map(x=>`<span class="pill">${x}</span>`).join('')}</div></div></div>`;
+function cMBg(e){if(e.target===document.getElementById('mBg'))cM();}
+function cM(){document.getElementById('mBg').classList.remove('on');cId=null;}
+async function delM(){
+  if(!cId||!confirm('Delete this record?'))return;
+  const r=await fetch('/records/'+cId,{method:'DELETE'});
+  const d=await r.json();
+  if(d.status==='deleted'){cM();loadR();toast('Record deleted');}
+  else toast('Delete failed','err');
+}
 
-        if (!payload.patient_name.trim()) {
-            showToast('Patient name is required', 'error');
-            return;
-        }
+// ── NAV SCROLL ──
+const nav=document.getElementById('nav');
+function updateNav(){
+  if(window.pageYOffset>60) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+}
+window.addEventListener('scroll',updateNav);
+updateNav();
 
-        try {
-            const res = await fetch('/save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-
-            if (data.status === 'saved') {
-                clearForm();
-                loadRecords();
-                showToast('Record saved successfully');
-            } else {
-                showToast(data.error || 'Save failed', 'error');
-            }
-        } catch (e) {
-            showToast('Server error', 'error');
-        }
-    }
-
-    // ── CLEAR FORM ──
-    function clearForm() {
-        ['f_patient_name','f_age','f_gender','f_doctor_name','f_diagnosis',
-         'f_symptoms','f_treatment','f_followup','f_prakriti','f_notes'].forEach(id => {
-            document.getElementById(id).value = '';
-        });
-        document.getElementById('transcript').value = '';
-        document.getElementById('confWrap').style.display = 'none';
-    }
-
-    // ── LOAD RECORDS ──
-    async function loadRecords() {
-        try {
-            const res = await fetch('/records');
-            allRecords = await res.json();
-            renderRecords(allRecords);
-
-            const today = allRecords.filter(r => r.is_today).length;
-            document.getElementById('totalCount').textContent = allRecords.length + ' RECORDS';
-            document.getElementById('todayCount').textContent = today + ' TODAY';
-            document.getElementById('recordBadge').textContent = allRecords.length;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    // ── RENDER RECORDS ──
-    function renderRecords(records) {
-        const container = document.getElementById('recordsList');
-
-        if (!records.length) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="icon">📋</div>
-                    <p>NO RECORDS FOUND</p>
-                </div>`;
-            return;
-        }
-
-        container.innerHTML = records.map(r => `
-            <div class="record-card ${r.is_today ? 'today' : ''}" onclick="openRecord('${r.id}')">
-                <div class="record-top">
-                    <div class="record-name">${r.patient_name || 'Unknown'}</div>
-                    <div class="record-meta">
-                        ${r.is_today ? '<span class="tag today-tag">TODAY</span>' : ''}
-                        ${r.gender ? `<span class="tag">${r.gender}</span>` : ''}
-                        ${r.age ? `<span class="tag">${r.age}y</span>` : ''}
-                    </div>
-                </div>
-                <div class="record-diag">${r.diagnosis || '—'}</div>
-                <div class="record-footer">
-                    <span class="record-date">${r.date || ''} ${r.doctor_name ? '· Dr. ' + r.doctor_name : ''}</span>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // ── SEARCH ──
-    function onSearch(val) {
-        clearTimeout(searchTimeout);
-        if (!val.trim()) {
-            renderRecords(allRecords);
-            return;
-        }
-        searchTimeout = setTimeout(async () => {
-            const res = await fetch('/search?q=' + encodeURIComponent(val));
-            const data = await res.json();
-            renderRecords(data);
-        }, 300);
-    }
-
-    // ── MODAL ──
-    async function openRecord(id) {
-        const res = await fetch('/records/' + id);
-        const r = await res.json();
-        if (r.error) { showToast('Record not found', 'error'); return; }
-
-        currentModalId = id;
-        document.getElementById('modalTitle').textContent = r.patient_name?.toUpperCase() || 'PATIENT RECORD';
-
-        const sym = r.symptoms ? r.symptoms.split(/[;,]/).map(s => s.trim()).filter(Boolean) : [];
-        const tre = r.treatment ? r.treatment.split(/[;,]/).map(s => s.trim()).filter(Boolean) : [];
-
-        document.getElementById('modalBody').innerHTML = `
-            ${field('DATE', r.date || '—')}
-            ${field('DOCTOR', r.doctor_name || '—')}
-            ${field('AGE / GENDER', [r.age, r.gender].filter(Boolean).join(' / ') || '—')}
-            ${field('DIAGNOSIS', r.diagnosis || '—')}
-            ${sym.length ? fieldPills('SYMPTOMS', sym) : field('SYMPTOMS', '—')}
-            ${tre.length ? fieldPills('TREATMENT', tre) : field('TREATMENT', '—')}
-            ${r.followup ? field('FOLLOW-UP', r.followup) : ''}
-            ${r.prakriti ? field('PRAKRITI', r.prakriti) : ''}
-            ${r.notes ? field('NOTES', r.notes) : ''}
-        `;
-
-        document.getElementById('modalOverlay').classList.add('active');
-    }
-
-    function field(key, val) {
-        return `<div class="detail-row">
-            <div class="detail-key">${key}</div>
-            <div class="detail-val">${val}</div>
-        </div>`;
-    }
-
-    function fieldPills(key, items) {
-        return `<div class="detail-row">
-            <div class="detail-key">${key}</div>
-            <div class="detail-val"><div class="pill-list">${items.map(i => `<span class="pill">${i}</span>`).join('')}</div></div>
-        </div>`;
-    }
-
-    function closeModal(e) {
-        if (e.target === document.getElementById('modalOverlay')) closeModalBtn();
-    }
-
-    function closeModalBtn() {
-        document.getElementById('modalOverlay').classList.remove('active');
-        currentModalId = null;
-    }
-
-    async function deleteFromModal() {
-        if (!currentModalId) return;
-        if (!confirm('Delete this record?')) return;
-
-        const res = await fetch('/records/' + currentModalId, { method: 'DELETE' });
-        const data = await res.json();
-
-        if (data.status === 'deleted') {
-            closeModalBtn();
-            loadRecords();
-            showToast('Record deleted');
-        } else {
-            showToast('Delete failed', 'error');
-        }
-    }
-
-    // ── INIT ──
-    loadRecords();
+loadR();
 </script>
 </body>
 </html>

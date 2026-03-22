@@ -87,6 +87,8 @@ input[type=file]::-webkit-file-upload-button{background:var(--teal-bg);border:1p
 .bo.rec-active{background:rgba(224,63,63,0.08);color:var(--danger);border-color:rgba(224,63,63,0.28);}
 .bd{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(224,63,63,0.20);font-size:9px;padding:7px 12px;width:auto;}
 .bd:hover{background:rgba(224,63,63,0.14);}
+.bp{background:var(--teal-bg);color:var(--teal-text);border:1px solid var(--teal-bd);font-size:9px;padding:7px 12px;width:auto;}
+.bp:hover{background:rgba(45,158,148,0.18);}
 .br{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
 
 .ri{display:none;align-items:center;gap:8px;padding:8px 13px;background:var(--danger-bg);border:1px solid rgba(224,63,63,0.20);border-radius:8px;margin-bottom:10px;}
@@ -192,6 +194,7 @@ footer{background:transparent;padding:28px 48px;border-top:1px solid var(--borde
       <img src="./assets/name_logo.png" alt="EHR Assistant" onerror="this.src='./assets/name_logo_green.png'">
     </a>
   </div>
+  <div class="nav-pill"><div class="pd"></div>AI Live</div>
 </nav>
 
 <section class="hero" id="top">
@@ -200,6 +203,7 @@ footer{background:transparent;padding:28px 48px;border-top:1px solid var(--borde
   </video>
   <div class="hero-ov"></div>
   <div class="hero-content">
+    <div class="hero-eyebrow"><div class="pd"></div>Voice to EHR &middot; AI Powered</div>
     <h1 class="hero-h1">Clinical records,<br><span class="ac">zero friction.</span></h1>
     <p class="hero-sub">Speak your consultation. AI extracts, structures and stores the complete EHR &mdash; in seconds.</p>
     <a href="#ehr" class="hero-cta">
@@ -290,7 +294,7 @@ footer{background:transparent;padding:28px 48px;border-top:1px solid var(--borde
     </div>
     <a href="https://github.com/iamakshittyagi" target="_blank" class="gh">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-      Akshit Tyagi
+      iamakshittyagi
     </a>
   </div>
 </footer>
@@ -300,7 +304,16 @@ footer{background:transparent;padding:28px 48px;border-top:1px solid var(--borde
     <button class="mx" onclick="cM()"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <div class="mttl" id="mTtl">Patient Record</div>
     <div id="mBody"></div>
-    <div style="margin-top:18px;"><button class="btn bd" onclick="delM()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete Record</button></div>
+    <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn bp" onclick="printPDF()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Save as PDF
+      </button>
+      <button class="btn bd" onclick="delM()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Delete
+      </button>
+    </div>
   </div>
 </div>
 <div class="toast" id="toast"><span id="ti">&#10003;</span><span id="tm"></span></div>
@@ -323,6 +336,38 @@ const fp=(k,i)=>'<div class="dr"><div class="dk">'+k+'</div><div class="dvv"><di
 function cMBg(e){if(e.target===document.getElementById('mBg'))cM();}
 function cM(){document.getElementById('mBg').classList.remove('on');cId=null;}
 async function delM(){if(!cId||!confirm('Delete this record?'))return;const r=await fetch('/records/'+cId,{method:'DELETE'});const d=await r.json();if(d.status==='deleted'){cM();loadR();toast('Record deleted');}else toast('Delete failed','err');}
+function printPDF(){
+  const title = document.getElementById('mTtl').textContent;
+  const body  = document.getElementById('mBody').innerHTML;
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>EHR - ${title}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Helvetica Neue',Arial,sans-serif;padding:40px;color:#0f1f1e;font-size:13px;}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid #2d9e94;}
+    .header h1{font-size:22px;font-weight:800;color:#0f1f1e;}
+    .header .meta{text-align:right;font-size:11px;color:#7a9896;}
+    .badge{display:inline-block;background:#edf7f6;border:1px solid rgba(45,158,148,0.3);border-radius:4px;padding:2px 8px;font-size:10px;color:#1a6b63;font-family:monospace;letter-spacing:0.06em;margin-bottom:16px;}
+    .row{display:grid;grid-template-columns:110px 1fr;gap:8px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.07);}
+    .key{font-size:9px;font-family:monospace;color:#7a9896;letter-spacing:0.12em;text-transform:uppercase;padding-top:2px;}
+    .val{font-size:13px;color:#0f1f1e;line-height:1.5;}
+    .pills{display:flex;flex-wrap:wrap;gap:5px;}
+    .pill{background:#edf7f6;border:1px solid rgba(45,158,148,0.28);border-radius:4px;padding:2px 8px;font-family:monospace;font-size:10px;color:#1a6b63;}
+    .footer{margin-top:32px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.08);font-size:10px;color:#7a9896;font-family:monospace;}
+    @media print{body{padding:20px;}@page{margin:15mm;}}
+  </style></head><body>
+  <div class="header">
+    <div><h1>${title}</h1><span style="font-size:11px;color:#7a9896;font-family:monospace;">EHR RECORD</span></div>
+    <div class="meta">EHR Assistant<br>${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</div>
+  </div>
+  <div class="badge">GENERATED BY EHR ASSISTANT · AI POWERED</div>
+  ${body.replace(/class="dr"/g,'class="row"').replace(/class="dk"/g,'class="key"').replace(/class="dvv"/g,'class="val"').replace(/class="pills"/g,'class="pills"').replace(/class="pill"/g,'class="pill"')}
+  <div class="footer">Generated by EHR Assistant &nbsp;·&nbsp; ${new Date().toISOString().split('T')[0]} &nbsp;·&nbsp; ehr-assistant.vercel.app</div>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>{w.print();},400);
+}
 const nav=document.getElementById('nav');
 window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',window.pageYOffset>60);},{passive:true});
 loadR();

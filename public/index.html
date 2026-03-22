@@ -12,7 +12,6 @@
 html{scroll-behavior:smooth;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 h1,h2,h3,h4,h5{font-family:'Plus Jakarta Sans',sans-serif;}
-
 #nav{position:fixed;top:0;left:0;right:0;z-index:200;height:72px;padding:0 48px;display:flex;align-items:center;justify-content:space-between;background:transparent;border-bottom:1px solid transparent;transition:all 0.35s ease;}
 #nav.scrolled{background:rgba(255,255,255,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--teal-bd);box-shadow:0 1px 0 rgba(0,0,0,0.05);}
 .nav-logo img{height:44px;object-fit:contain;transition:opacity 0.2s;}
@@ -21,7 +20,6 @@ h1,h2,h3,h4,h5{font-family:'Plus Jakarta Sans',sans-serif;}
 #nav.scrolled .nav-pill{background:var(--teal-bg);border-color:var(--teal-bd);color:var(--teal-text);backdrop-filter:none;}
 .pd{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px rgba(45,158,148,0.9);animation:pulse 2s infinite;flex-shrink:0;}
 @keyframes pulse{0%,100%{box-shadow:0 0 5px rgba(45,158,148,0.7)}50%{box-shadow:0 0 16px rgba(45,158,148,1),0 0 28px rgba(45,158,148,0.4)}}
-
 .hero{position:relative;width:100%;height:100vh;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;}
 #bgv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:brightness(0.50) saturate(1.1);}
 .hero-ov{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(4,18,16,0.28) 0%,rgba(4,18,16,0.08) 40%,rgba(4,18,16,0.52) 100%);}
@@ -35,20 +33,7 @@ h1,h2,h3,h4,h5{font-family:'Plus Jakarta Sans',sans-serif;}
 .hero-cta{display:inline-flex;align-items:center;gap:10px;background:var(--teal);color:#fff;border:none;border-radius:100px;padding:14px 32px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 4px 24px rgba(45,158,148,0.45);transition:all 0.25s;}
 .hero-cta:hover{background:var(--teal-d);box-shadow:0 8px 36px rgba(45,158,148,0.55);transform:translateY(-2px);}
 .hero-cta:active{transform:translateY(0);}
-
-.hero-stats{position:absolute;bottom:40px;left:0;right:0;z-index:2;display:flex;justify-content:center;}
-.hstat{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 36px;border-right:1px solid rgba(255,255,255,0.18);}
-.hstat:last-child{border-right:none;}
-.hsv{font-family:'DM Mono',monospace;font-size:28px;color:#fff;font-weight:500;line-height:1;text-shadow:0 2px 16px rgba(0,0,0,0.3);}
-.hsl{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.55);}
-
-.scroll-hint{position:absolute;bottom:100px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0.55;animation:bob 2s ease-in-out infinite;}
-@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
-.scroll-hint span{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#fff;}
-
 .form-section{max-width:1280px;margin:0 auto;padding:80px 48px 56px;}
-@media(max-width:640px){.form-section{padding:48px 20px 40px;}}
-
 .card{background:var(--card);border:1px solid var(--border2);border-radius:22px;overflow:hidden;position:relative;box-shadow:var(--shadow-md);animation:fu 0.6s cubic-bezier(0.22,1,0.36,1) both;}
 @keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);}
@@ -77,7 +62,6 @@ input[type=file]::-webkit-file-upload-button{background:var(--teal-bg);border:1p
 .conf-l{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:7px;letter-spacing:0.08em;}
 .conf-bg{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
 .conf-f{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-l));border-radius:2px;transition:width 0.6s ease;}
-
 .btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border:none;border-radius:10px;font-family:'DM Mono',monospace;font-size:9.5px;font-weight:500;letter-spacing:0.10em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;width:100%;}
 .bt{background:var(--teal);color:#fff;box-shadow:0 2px 12px rgba(45,158,148,0.28);font-size:10.5px;padding:12px 20px;}
 .bt:hover{background:var(--teal-d);box-shadow:0 6px 24px rgba(45,158,148,0.40);transform:translateY(-1px);}
@@ -90,7 +74,6 @@ input[type=file]::-webkit-file-upload-button{background:var(--teal-bg);border:1p
 .bp{background:var(--teal-bg);color:var(--teal-text);border:1px solid var(--teal-bd);font-size:9px;padding:7px 12px;width:auto;}
 .bp:hover{background:rgba(45,158,148,0.18);}
 .br{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
-
 .ri{display:none;align-items:center;gap:8px;padding:8px 13px;background:var(--danger-bg);border:1px solid rgba(224,63,63,0.20);border-radius:8px;margin-bottom:10px;}
 .ri.on{display:flex;}
 .rd{width:7px;height:7px;border-radius:50%;background:var(--danger);animation:rp 1s infinite;flex-shrink:0;}
@@ -102,7 +85,6 @@ input[type=file]::-webkit-file-upload-button{background:var(--teal-bg);border:1p
 .proc span{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--teal-text);letter-spacing:0.10em;}
 .spin{width:12px;height:12px;border:2px solid var(--teal-bd);border-top-color:var(--teal);border-radius:50%;animation:sp 0.7s linear infinite;flex-shrink:0;}
 @keyframes sp{to{transform:rotate(360deg)}}
-
 .sw{position:relative;margin-bottom:14px;}
 .sw input{padding-left:36px;font-family:'DM Mono',monospace;font-size:12px;}
 .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
@@ -123,7 +105,6 @@ input[type=file]::-webkit-file-upload-button{background:var(--teal-bg);border:1p
 .empty{text-align:center;padding:52px 20px;}
 .empty .ei{margin:0 auto 14px;opacity:0.2;}
 .empty p{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);}
-
 .mbg{display:none;position:fixed;inset:0;background:rgba(4,18,16,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;}
 .mbg.on{display:flex;}
 .modal{background:#fff;border:1px solid var(--border2);border-radius:22px;padding:32px;width:90%;max-width:520px;max-height:88vh;overflow-y:auto;position:relative;box-shadow:0 32px 80px rgba(0,0,0,0.18);animation:mIn 0.25s cubic-bezier(0.22,1,0.36,1) both;}
@@ -137,17 +118,14 @@ input[type=file]::-webkit-file-upload-button{background:var(--teal-bg);border:1p
 .dvv{font-size:13px;color:var(--text);line-height:1.5;}
 .pills{display:flex;flex-wrap:wrap;gap:5px;}
 .pill{background:var(--teal-bg);border:1px solid var(--teal-bd);border-radius:5px;padding:3px 10px;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--teal-text);}
-
 .toast{position:fixed;bottom:28px;right:28px;z-index:2000;background:#fff;border:1px solid var(--teal-bd);border-radius:12px;padding:12px 18px;font-family:'DM Mono',monospace;font-size:11px;color:var(--teal-text);box-shadow:var(--shadow-lg);transform:translateY(60px);opacity:0;transition:all 0.32s cubic-bezier(0.22,1,0.36,1);display:flex;align-items:center;gap:9px;max-width:300px;}
 .toast.on{transform:translateY(0);opacity:1;}
 .toast.err{border-color:rgba(224,63,63,0.35);color:var(--danger);}
-
 footer{background:transparent;padding:28px 48px;border-top:1px solid var(--border);}
 .fi{max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
 .fl img{height:30px;object-fit:contain;}
 .gh{display:inline-flex;align-items:center;gap:8px;background:var(--teal-bg);border:1px solid var(--teal-bd);border-radius:100px;padding:8px 18px;font-family:'DM Mono',monospace;font-size:10px;color:var(--teal-text);text-decoration:none;letter-spacing:0.06em;transition:all 0.2s;font-weight:500;}
 .gh:hover{background:rgba(45,158,148,0.16);transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,158,148,0.15);}
-
 @media(max-width:640px){
   #nav{height:60px;padding:0 20px;}
   .nav-logo img{height:34px;}
@@ -159,11 +137,6 @@ footer{background:transparent;padding:28px 48px;border-top:1px solid var(--borde
   .hero-h1{font-size:38px;margin-bottom:16px;}
   .hero-sub{font-size:15px;margin-bottom:32px;}
   .hero-cta{font-size:14px;padding:12px 26px;}
-  .hero-stats{bottom:28px;}
-  .hstat{padding:0 16px;}
-  .hsv{font-size:22px;}
-  .hsl{font-size:8px;}
-  .scroll-hint{display:none;}
   .form-section{padding:36px 16px 40px;}
   .two-col{grid-template-columns:1fr;gap:20px;}
   .card{border-radius:16px;}
@@ -194,7 +167,6 @@ footer{background:transparent;padding:28px 48px;border-top:1px solid var(--borde
       <img src="./assets/name_logo.png" alt="EHR Assistant" onerror="this.src='./assets/name_logo_green.png'">
     </a>
   </div>
-  <div class="nav-pill"><div class="pd"></div>AI Live</div>
 </nav>
 
 <section class="hero" id="top">
@@ -203,22 +175,12 @@ footer{background:transparent;padding:28px 48px;border-top:1px solid var(--borde
   </video>
   <div class="hero-ov"></div>
   <div class="hero-content">
-    <div class="hero-eyebrow"><div class="pd"></div>Voice to EHR &middot; AI Powered</div>
     <h1 class="hero-h1">Clinical records,<br><span class="ac">zero friction.</span></h1>
     <p class="hero-sub">Speak your consultation. AI extracts, structures and stores the complete EHR &mdash; in seconds.</p>
     <a href="#ehr" class="hero-cta">
       Start a Record
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
-  </div>
-  <div class="hero-stats">
-    <div class="hstat"><span class="hsv" id="hTotal">0</span><span class="hsl">Records</span></div>
-    <div class="hstat"><span class="hsv" id="hToday">0</span><span class="hsl">Today</span></div>
-    <div class="hstat"><span class="hsv">AI</span><span class="hsl">Extraction</span></div>
-  </div>
-  <div class="scroll-hint">
-    <span>Scroll</span>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
   </div>
 </section>
 
@@ -294,7 +256,7 @@ footer{background:transparent;padding:28px 48px;border-top:1px solid var(--borde
     </div>
     <a href="https://github.com/iamakshittyagi" target="_blank" class="gh">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-      iamakshittyagi
+      Akshit Tyagi
     </a>
   </div>
 </footer>
@@ -316,60 +278,241 @@ footer{background:transparent;padding:28px 48px;border-top:1px solid var(--borde
     </div>
   </div>
 </div>
+
 <div class="toast" id="toast"><span id="ti">&#10003;</span><span id="tm"></span></div>
 
 <script>
-let cId=null,allR=[],sTO=null,mediaRecorder=null,audioChunks=[],recInterval=null,recSecs=0,isRecording=false;
-function toast(msg,type='ok'){const t=document.getElementById('toast');document.getElementById('ti').textContent=type==='err'?'✗':'✓';document.getElementById('tm').textContent=msg;t.className='toast on'+(type==='err'?' err':'');setTimeout(()=>t.classList.remove('on'),3200);}
-async function toggleRecord(){if(!isRecording){try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});audioChunks=[];mediaRecorder=new MediaRecorder(stream);mediaRecorder.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};mediaRecorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());await sendAudioBlob(new Blob(audioChunks,{type:'audio/webm'}));};mediaRecorder.start();isRecording=true;recSecs=0;document.getElementById('rInd').classList.add('on');const btn=document.getElementById('recBtn');btn.classList.add('rec-active');btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg> Stop';recInterval=setInterval(()=>{recSecs++;const m=Math.floor(recSecs/60),s=recSecs%60;document.getElementById('rTimer').textContent=m+':'+(s<10?'0':'')+s;},1000);toast('Recording started...');}catch(e){toast('Microphone access denied','err');}}else{mediaRecorder.stop();isRecording=false;clearInterval(recInterval);document.getElementById('rInd').classList.remove('on');const btn=document.getElementById('recBtn');btn.classList.remove('rec-active');btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg> Record';toast('Processing recording...');}}
-async function sendAudioBlob(blob){document.getElementById('procInd').classList.add('on');const fd=new FormData();fd.append('audio',blob,'recording.webm');try{const r=await fetch('/transcribe',{method:'POST',body:fd});const d=await r.json();if(d.text){document.getElementById('transcript').value=d.text;toast('Transcription done ✓');}else toast(d.error||'Failed','err');}catch(e){toast('Server error','err');}finally{document.getElementById('procInd').classList.remove('on');}}
-async function transcribeFile(){const f=document.getElementById('audioFile').files[0];if(!f){toast('Select an audio file first','err');return;}document.getElementById('procInd').classList.add('on');const fd=new FormData();fd.append('audio',f);try{const r=await fetch('/transcribe',{method:'POST',body:fd});const d=await r.json();if(d.text){document.getElementById('transcript').value=d.text;toast('Transcription done ✓');}else toast(d.error||'Failed','err');}catch(e){toast('Server error','err');}finally{document.getElementById('procInd').classList.remove('on');}}
-async function extractFromTranscript(){const t=document.getElementById('transcript').value;if(!t.trim()){toast('Enter transcript first','err');return;}toast('AI extracting...');try{const r=await fetch('/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({transcript:t})});const d=await r.json();if(d.error){toast(d.error,'err');return;}document.getElementById('f_name').value=d.patient_name||'';document.getElementById('f_age').value=d.age||'';document.getElementById('f_gender').value=d.gender||'';document.getElementById('f_doc').value=d.doctor_name||'';document.getElementById('f_diag').value=d.diagnosis||'';document.getElementById('f_sym').value=(d.symptoms||[]).join(', ');document.getElementById('f_treat').value=(d.treatment||[]).join(', ');document.getElementById('f_follow').value=d.followup||'';document.getElementById('f_notes').value=d.notes||'';if(d.confidence!==undefined){const p=Math.round(d.confidence*100);document.getElementById('confW').style.display='block';document.getElementById('confV').textContent=p+'%';document.getElementById('confF').style.width=p+'%';}toast('Fields extracted ✓');}catch(e){toast('Extraction failed','err');}}
-async function saveRecord(){const p={patient_name:document.getElementById('f_name').value,age:document.getElementById('f_age').value,gender:document.getElementById('f_gender').value,doctor_name:document.getElementById('f_doc').value,diagnosis:document.getElementById('f_diag').value,symptoms:document.getElementById('f_sym').value,treatment:document.getElementById('f_treat').value,followup:document.getElementById('f_follow').value,notes:document.getElementById('f_notes').value};if(!p.patient_name.trim()){toast('Patient name required','err');return;}try{const r=await fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});const d=await r.json();if(d.status==='saved'){clrForm();loadR();toast('Record saved ✓');}else toast(d.error||'Save failed','err');}catch(e){toast('Server error','err');}}
-function clrForm(){['f_name','f_age','f_gender','f_doc','f_diag','f_sym','f_treat','f_follow','f_notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('transcript').value='';document.getElementById('confW').style.display='none';}
-async function loadR(){try{const r=await fetch('/records');allR=await r.json();if(!Array.isArray(allR))allR=[];renderR(allR);const td=allR.filter(r=>r.is_today).length;document.getElementById('hTotal').textContent=allR.length;document.getElementById('hToday').textContent=td;document.getElementById('rBadge').textContent=allR.length;}catch(e){}}
-function renderR(recs){const el=document.getElementById('recList');if(!recs.length){el.innerHTML='<div class="empty"><div class="ei"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><p>No records found</p></div>';return;}el.innerHTML=recs.map(r=>'<div class="rc '+(r.is_today?'today':'')+'" onclick="openR(\''+r.id+'\')"><div class="rt2"><div class="rn">'+(r.patient_name||'Unknown')+'</div><div class="rtags">'+(r.is_today?'<span class="tag t">TODAY</span>':'')+(r.gender?'<span class="tag">'+r.gender+'</span>':'')+(r.age?'<span class="tag">'+r.age+'y</span>':'')+'</div></div><div class="rdiag">'+(r.diagnosis||'—')+'</div><div class="rfoot"><span class="rdate">'+(r.date||'')+(r.doctor_name?' · Dr. '+r.doctor_name:'')+'</span></div></div>').join('');}
-function onSearch(v){clearTimeout(sTO);if(!v.trim()){renderR(allR);return;}sTO=setTimeout(async()=>{const r=await fetch('/search?q='+encodeURIComponent(v));renderR(await r.json());},300);}
-async function openR(id){const r=await fetch('/records/'+id);const d=await r.json();if(d.error){toast('Not found','err');return;}cId=id;document.getElementById('mTtl').textContent=d.patient_name||'Patient Record';const sym=d.symptoms?d.symptoms.split(/[;,]/).map(s=>s.trim()).filter(Boolean):[];const tre=d.treatment?d.treatment.split(/[;,]/).map(s=>s.trim()).filter(Boolean):[];document.getElementById('mBody').innerHTML=fr('Date',d.date||'—')+fr('Doctor',d.doctor_name||'—')+fr('Age / Gender',[d.age,d.gender].filter(Boolean).join(' / ')||'—')+fr('Diagnosis',d.diagnosis||'—')+(sym.length?fp('Symptoms',sym):fr('Symptoms','—'))+(tre.length?fp('Treatment',tre):fr('Treatment','—'))+(d.followup?fr('Follow-up',d.followup):'')+(d.notes?fr('Notes',d.notes):'');document.getElementById('mBg').classList.add('on');}
-const fr=(k,v)=>'<div class="dr"><div class="dk">'+k+'</div><div class="dvv">'+v+'</div></div>';
-const fp=(k,i)=>'<div class="dr"><div class="dk">'+k+'</div><div class="dvv"><div class="pills">'+i.map(x=>'<span class="pill">'+x+'</span>').join('')+'</div></div></div>';
+var cId=null,allR=[],sTO=null,mediaRecorder=null,audioChunks=[],recInterval=null,recSecs=0,isRecording=false;
+
+function toast(msg,type){
+  var t=document.getElementById('toast');
+  document.getElementById('ti').textContent=(type==='err')?'!':'v';
+  document.getElementById('tm').textContent=msg;
+  t.className='toast on'+((type==='err')?' err':'');
+  setTimeout(function(){t.classList.remove('on');},3200);
+}
+
+async function toggleRecord(){
+  if(!isRecording){
+    try{
+      var stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      audioChunks=[];
+      mediaRecorder=new MediaRecorder(stream);
+      mediaRecorder.ondataavailable=function(e){if(e.data.size>0)audioChunks.push(e.data);};
+      mediaRecorder.onstop=async function(){
+        stream.getTracks().forEach(function(t){t.stop();});
+        await sendAudioBlob(new Blob(audioChunks,{type:'audio/webm'}));
+      };
+      mediaRecorder.start();
+      isRecording=true; recSecs=0;
+      document.getElementById('rInd').classList.add('on');
+      var btn=document.getElementById('recBtn');
+      btn.classList.add('rec-active');
+      btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg> Stop';
+      recInterval=setInterval(function(){
+        recSecs++;
+        var m=Math.floor(recSecs/60),s=recSecs%60;
+        document.getElementById('rTimer').textContent=m+':'+(s<10?'0':'')+s;
+      },1000);
+      toast('Recording started...','ok');
+    }catch(e){toast('Microphone access denied','err');}
+  } else {
+    mediaRecorder.stop(); isRecording=false; clearInterval(recInterval);
+    document.getElementById('rInd').classList.remove('on');
+    var btn=document.getElementById('recBtn');
+    btn.classList.remove('rec-active');
+    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg> Record';
+    toast('Processing recording...','ok');
+  }
+}
+
+async function sendAudioBlob(blob){
+  document.getElementById('procInd').classList.add('on');
+  var fd=new FormData(); fd.append('audio',blob,'recording.webm');
+  try{
+    var r=await fetch('/transcribe',{method:'POST',body:fd});
+    var d=await r.json();
+    if(d.text){document.getElementById('transcript').value=d.text; toast('Transcription done','ok');}
+    else toast(d.error||'Failed','err');
+  }catch(e){toast('Server error','err');}
+  finally{document.getElementById('procInd').classList.remove('on');}
+}
+
+async function transcribeFile(){
+  var f=document.getElementById('audioFile').files[0];
+  if(!f){toast('Select an audio file first','err');return;}
+  document.getElementById('procInd').classList.add('on');
+  var fd=new FormData(); fd.append('audio',f);
+  try{
+    var r=await fetch('/transcribe',{method:'POST',body:fd});
+    var d=await r.json();
+    if(d.text){document.getElementById('transcript').value=d.text; toast('Transcription done','ok');}
+    else toast(d.error||'Failed','err');
+  }catch(e){toast('Server error','err');}
+  finally{document.getElementById('procInd').classList.remove('on');}
+}
+
+async function extractFromTranscript(){
+  var t=document.getElementById('transcript').value;
+  if(!t.trim()){toast('Enter transcript first','err');return;}
+  toast('AI extracting...','ok');
+  try{
+    var r=await fetch('/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({transcript:t})});
+    var d=await r.json();
+    if(d.error){toast(d.error,'err');return;}
+    document.getElementById('f_name').value=d.patient_name||'';
+    document.getElementById('f_age').value=d.age||'';
+    document.getElementById('f_gender').value=d.gender||'';
+    document.getElementById('f_doc').value=d.doctor_name||'';
+    document.getElementById('f_diag').value=d.diagnosis||'';
+    document.getElementById('f_sym').value=(d.symptoms||[]).join(', ');
+    document.getElementById('f_treat').value=(d.treatment||[]).join(', ');
+    document.getElementById('f_follow').value=d.followup||'';
+    document.getElementById('f_notes').value=d.notes||'';
+    if(d.confidence!==undefined){
+      var p=Math.round(d.confidence*100);
+      document.getElementById('confW').style.display='block';
+      document.getElementById('confV').textContent=p+'%';
+      document.getElementById('confF').style.width=p+'%';
+    }
+    toast('Fields extracted','ok');
+  }catch(e){toast('Extraction failed','err');}
+}
+
+async function saveRecord(){
+  var p={
+    patient_name:document.getElementById('f_name').value,
+    age:document.getElementById('f_age').value,
+    gender:document.getElementById('f_gender').value,
+    doctor_name:document.getElementById('f_doc').value,
+    diagnosis:document.getElementById('f_diag').value,
+    symptoms:document.getElementById('f_sym').value,
+    treatment:document.getElementById('f_treat').value,
+    followup:document.getElementById('f_follow').value,
+    notes:document.getElementById('f_notes').value
+  };
+  if(!p.patient_name.trim()){toast('Patient name required','err');return;}
+  try{
+    var r=await fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+    var d=await r.json();
+    if(d.status==='saved'){clrForm();loadR();toast('Record saved','ok');}
+    else toast(d.error||'Save failed','err');
+  }catch(e){toast('Server error','err');}
+}
+
+function clrForm(){
+  ['f_name','f_age','f_gender','f_doc','f_diag','f_sym','f_treat','f_follow','f_notes'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  document.getElementById('transcript').value='';
+  document.getElementById('confW').style.display='none';
+}
+
+async function loadR(){
+  try{
+    var r=await fetch('/records');
+    allR=await r.json();
+    if(!Array.isArray(allR))allR=[];
+    renderR(allR);
+    document.getElementById('rBadge').textContent=allR.length;
+  }catch(e){}
+}
+
+function renderR(recs){
+  var el=document.getElementById('recList');
+  if(!recs.length){
+    el.innerHTML='<div class="empty"><div class="ei"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><p>No records found</p></div>';
+    return;
+  }
+  el.innerHTML=recs.map(function(r){
+    return '<div class="rc '+(r.is_today?'today':'')+'" onclick="openR(\''+r.id+'\')">'
+      +'<div class="rt2"><div class="rn">'+(r.patient_name||'Unknown')+'</div>'
+      +'<div class="rtags">'+(r.is_today?'<span class="tag t">TODAY</span>':'')
+      +(r.gender?'<span class="tag">'+r.gender+'</span>':'')
+      +(r.age?'<span class="tag">'+r.age+'y</span>':'')+'</div></div>'
+      +'<div class="rdiag">'+(r.diagnosis||'&mdash;')+'</div>'
+      +'<div class="rfoot"><span class="rdate">'+(r.date||'')+(r.doctor_name?' &middot; Dr. '+r.doctor_name:'')+'</span></div>'
+      +'</div>';
+  }).join('');
+}
+
+function onSearch(v){
+  clearTimeout(sTO);
+  if(!v.trim()){renderR(allR);return;}
+  sTO=setTimeout(async function(){
+    var r=await fetch('/search?q='+encodeURIComponent(v));
+    renderR(await r.json());
+  },300);
+}
+
+async function openR(id){
+  var r=await fetch('/records/'+id);
+  var d=await r.json();
+  if(d.error){toast('Not found','err');return;}
+  cId=id;
+  document.getElementById('mTtl').textContent=d.patient_name||'Patient Record';
+  var sym=d.symptoms?d.symptoms.split(/[;,]/).map(function(s){return s.trim();}).filter(Boolean):[];
+  var tre=d.treatment?d.treatment.split(/[;,]/).map(function(s){return s.trim();}).filter(Boolean):[];
+  document.getElementById('mBody').innerHTML=
+    fr('Date',d.date||'&mdash;')+
+    fr('Doctor',d.doctor_name||'&mdash;')+
+    fr('Age / Gender',[d.age,d.gender].filter(Boolean).join(' / ')||'&mdash;')+
+    fr('Diagnosis',d.diagnosis||'&mdash;')+
+    (sym.length?fp('Symptoms',sym):fr('Symptoms','&mdash;'))+
+    (tre.length?fp('Treatment',tre):fr('Treatment','&mdash;'))+
+    (d.followup?fr('Follow-up',d.followup):'')+
+    (d.notes?fr('Notes',d.notes):'');
+  document.getElementById('mBg').classList.add('on');
+}
+
+function fr(k,v){return '<div class="dr"><div class="dk">'+k+'</div><div class="dvv">'+v+'</div></div>';}
+function fp(k,i){return '<div class="dr"><div class="dk">'+k+'</div><div class="dvv"><div class="pills">'+i.map(function(x){return '<span class="pill">'+x+'</span>';}).join('')+'</div></div></div>';}
 function cMBg(e){if(e.target===document.getElementById('mBg'))cM();}
 function cM(){document.getElementById('mBg').classList.remove('on');cId=null;}
-async function delM(){if(!cId||!confirm('Delete this record?'))return;const r=await fetch('/records/'+cId,{method:'DELETE'});const d=await r.json();if(d.status==='deleted'){cM();loadR();toast('Record deleted');}else toast('Delete failed','err');}
-function printPDF(){
-  const title = document.getElementById('mTtl').textContent;
-  const body  = document.getElementById('mBody').innerHTML;
-  const w = window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>EHR - ${title}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Helvetica Neue',Arial,sans-serif;padding:40px;color:#0f1f1e;font-size:13px;}
-    .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid #2d9e94;}
-    .header h1{font-size:22px;font-weight:800;color:#0f1f1e;}
-    .header .meta{text-align:right;font-size:11px;color:#7a9896;}
-    .badge{display:inline-block;background:#edf7f6;border:1px solid rgba(45,158,148,0.3);border-radius:4px;padding:2px 8px;font-size:10px;color:#1a6b63;font-family:monospace;letter-spacing:0.06em;margin-bottom:16px;}
-    .row{display:grid;grid-template-columns:110px 1fr;gap:8px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.07);}
-    .key{font-size:9px;font-family:monospace;color:#7a9896;letter-spacing:0.12em;text-transform:uppercase;padding-top:2px;}
-    .val{font-size:13px;color:#0f1f1e;line-height:1.5;}
-    .pills{display:flex;flex-wrap:wrap;gap:5px;}
-    .pill{background:#edf7f6;border:1px solid rgba(45,158,148,0.28);border-radius:4px;padding:2px 8px;font-family:monospace;font-size:10px;color:#1a6b63;}
-    .footer{margin-top:32px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.08);font-size:10px;color:#7a9896;font-family:monospace;}
-    @media print{body{padding:20px;}@page{margin:15mm;}}
-  </style></head><body>
-  <div class="header">
-    <div><h1>${title}</h1><span style="font-size:11px;color:#7a9896;font-family:monospace;">EHR RECORD</span></div>
-    <div class="meta">EHR Assistant<br>${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</div>
-  </div>
-  <div class="badge">GENERATED BY EHR ASSISTANT · AI POWERED</div>
-  ${body.replace(/class="dr"/g,'class="row"').replace(/class="dk"/g,'class="key"').replace(/class="dvv"/g,'class="val"').replace(/class="pills"/g,'class="pills"').replace(/class="pill"/g,'class="pill"')}
-  <div class="footer">Generated by EHR Assistant &nbsp;·&nbsp; ${new Date().toISOString().split('T')[0]} &nbsp;·&nbsp; ehr-assistant.vercel.app</div>
-  </body></html>`);
-  w.document.close();
-  setTimeout(()=>{w.print();},400);
+
+async function delM(){
+  if(!cId||!confirm('Delete this record?'))return;
+  var r=await fetch('/records/'+cId,{method:'DELETE'});
+  var d=await r.json();
+  if(d.status==='deleted'){cM();loadR();toast('Record deleted','ok');}
+  else toast('Delete failed','err');
 }
-const nav=document.getElementById('nav');
-window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',window.pageYOffset>60);},{passive:true});
+
+function printPDF(){
+  var title=document.getElementById('mTtl').textContent;
+  var body=document.getElementById('mBody').innerHTML;
+  var date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  var isoDate=new Date().toISOString().split('T')[0];
+  var rows=body.replace(/class="dr"/g,'class="row"').replace(/class="dk"/g,'class="key"').replace(/class="dvv"/g,'class="val"');
+  var css='*{box-sizing:border-box;margin:0;padding:0;}'
+    +'body{font-family:Arial,sans-serif;padding:40px;color:#0f1f1e;font-size:13px;}'
+    +'.header{display:flex;justify-content:space-between;margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid #2d9e94;}'
+    +'.header h1{font-size:22px;font-weight:800;}'
+    +'.meta{text-align:right;font-size:11px;color:#7a9896;}'
+    +'.badge{display:inline-block;background:#edf7f6;border:1px solid rgba(45,158,148,0.3);border-radius:4px;padding:2px 8px;font-size:10px;color:#1a6b63;font-family:monospace;margin-bottom:16px;}'
+    +'.row{display:grid;grid-template-columns:110px 1fr;gap:8px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.07);}'
+    +'.key{font-size:9px;font-family:monospace;color:#7a9896;letter-spacing:0.12em;text-transform:uppercase;padding-top:2px;}'
+    +'.val{font-size:13px;color:#0f1f1e;line-height:1.5;}'
+    +'.pills{display:flex;flex-wrap:wrap;gap:5px;}'
+    +'.pill{background:#edf7f6;border:1px solid rgba(45,158,148,0.28);border-radius:4px;padding:2px 8px;font-family:monospace;font-size:10px;color:#1a6b63;}'
+    +'.footer{margin-top:32px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.08);font-size:10px;color:#7a9896;font-family:monospace;}'
+    +'@media print{body{padding:20px;}@page{margin:15mm;}}';
+  var w=window.open('','_blank');
+  w.document.open();
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>EHR - '+title+'<\/title><style>'+css+'<\/style><\/head><body>');
+  w.document.write('<div class="header"><div><h1>'+title+'</h1><div style="font-size:11px;color:#7a9896;font-family:monospace;">EHR RECORD</div></div><div class="meta">EHR Assistant<br>'+date+'</div></div>');
+  w.document.write('<div class="badge">GENERATED BY EHR ASSISTANT</div>');
+  w.document.write(rows);
+  w.document.write('<div class="footer">Generated by EHR Assistant &nbsp;&middot;&nbsp; '+isoDate+' &nbsp;&middot;&nbsp; ehr-assistant.vercel.app</div>');
+  w.document.write('<\/body><\/html>');
+  w.document.close();
+  setTimeout(function(){w.print();},400);
+}
+
+window.addEventListener('scroll',function(){
+  document.getElementById('nav').classList.toggle('scrolled',window.pageYOffset>60);
+},{passive:true});
+
 loadR();
 </script>
 </body>

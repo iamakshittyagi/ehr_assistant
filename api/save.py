@@ -4,10 +4,6 @@ import uuid
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler
 
-def get_redis():
-    from upstash_redis import Redis
-    return Redis(url=os.environ["KV_REST_API_URL"], token=os.environ["KV_REST_API_TOKEN"])
-
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self._cors(); self.end_headers()
@@ -17,32 +13,18 @@ class handler(BaseHTTPRequestHandler):
         try:
             data = json.loads(self.rfile.read(length) or b"{}")
         except Exception as e:
-            self._ok({"error": "Invalid JSON: " + str(e)}, 400); return
+            self._ok({"error": str(e)}); return
 
-        if not isinstance(data, dict) or not data.get("patient_name", "").strip():
-            self._ok({"error": "patient_name required"}, 400); return
-
-        for field in ("symptoms", "treatment"):
-            v = data.get(field)
-            if isinstance(v, list):
-                data[field] = "; ".join(v)
+        if not data.get("patient_name", "").strip():
+            self._ok({"error": "patient_name required"}); return
 
         try:
-            url = os.environ.get("KV_REST_API_URL", "NOT_SET")
-            token = os.environ.get("KV_REST_API_TOKEN", "NOT_SET")
-            if url == "NOT_SET" or token == "NOT_SET":
-                self._ok({"error": "Redis env vars missing", "url_set": url != "NOT_SET", "token_set": token != "NOT_SET"}); return
-            r = get_redis()
-            rid = str(uuid.uuid4())
-            now = datetime.utcnow()
-            data["id"] = rid
-            data["date"] = now.strftime("%Y-%m-%d")
-            data["created_at"] = now.isoformat()
-            r.set(f"ehr:rec:{rid}", json.dumps(data))
-            r.zadd("ehr:index", {rid: now.timestamp()})
-            self._ok({"status": "saved", "id": rid})
+            import upstash_redis
+            self._ok({"debug": "upstash imported ok"})
+        except ImportError as e:
+            self._ok({"error": "import failed: " + str(e)})
         except Exception as e:
-            self._ok({"error": str(e), "type": type(e).__name__}, 500)
+            self._ok({"error": "other error: " + str(e), "type": type(e).__name__})
 
     def _cors(self):
         self.send_response(200)

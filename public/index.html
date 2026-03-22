@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EHR Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon: #b8f5b0;
+            --neon-bright: #d4ffcc;
+            --neon-dim: #6bbf63;
+            --neon-glow: rgba(184, 245, 176, 0.15);
+            --neon-glow-strong: rgba(184, 245, 176, 0.35);
+            --bg: #050a05;
+            --bg2: #0a120a;
+            --bg3: #0f1a0f;
+            --border: rgba(184, 245, 176, 0.18);
+            --border-bright: rgba(184, 245, 176, 0.5);
+            --text-muted: rgba(184, 245, 176, 0.45);
+            --danger: #ff5c5c;
+            --warning: #ffd166;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--neon);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Scanline overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.08) 2px,
+                rgba(0,0,0,0.08) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Grid background */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(184,245,176,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(184,245,176,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px 60px;
+        }
+
+        /* ── HEADER ── */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 28px 0 32px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 36px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .logo-icon {
+            width: 52px;
+            height: 52px;
+            background: var(--neon-glow);
+            border: 1px solid var(--border-bright);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 20px var(--neon-glow), inset 0 0 20px var(--neon-glow);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: var(--neon-bright);
+            text-shadow: 0 0 20px var(--neon), 0 0 40px var(--neon-dim);
+            line-height: 1;
+        }
+
+        .logo-subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            margin-top: 5px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 24px;
+        }
+
+        .stat-pill {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--neon-glow);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--neon);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--neon); }
+            50% { opacity: 0.4; box-shadow: none; }
+        }
+
+        /* ── LAYOUT ── */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── PANELS ── */
+        .panel {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-dim), transparent);
+        }
+
+        .panel-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-header h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--neon-bright);
+            text-transform: uppercase;
+        }
+
+        .panel-badge {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--bg);
+            background: var(--neon-dim);
+            border-radius: 4px;
+            padding: 2px 8px;
+            letter-spacing: 1px;
+        }
+
+        .panel-body {
+            padding: 24px;
+        }
+
+        /* ── SECTION LABEL ── */
+        .section-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── INPUTS ── */
+        input, textarea, select {
+            width: 100%;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--neon);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            padding: 10px 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            resize: vertical;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--neon-dim);
+            box-shadow: 0 0 0 3px var(--neon-glow);
+        }
+
+        input[type="file"] {
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+        }
+
+        input[type="file"]::-webkit-file-upload-button {
+            background: var(--neon-glow);
+            border: 1px solid var(--border-bright);
+            color: var(--neon);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            width: 100%;
+            padding: 11px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(255,255,255,0.05), transparent);
+            pointer-events: none;
+        }
+
+        .btn-primary {
+            background: var(--neon);
+            color: var(--bg);
+            box-shadow: 0 0 20px rgba(184,245,176,0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--neon-bright);
+            box-shadow: 0 0 30px rgba(184,245,176,0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--neon);
+            border: 1px solid var(--border-bright);
+        }
+
+        .btn-outline:hover {
+            background: var(--neon-glow);
+            box-shadow: 0 0 15px var(--neon-glow);
+        }
+
+        .btn-ghost {
+            background: var(--neon-glow);
+            color: var(--neon);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--neon-dim);
+            box-shadow: 0 0 12px var(--neon-glow);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid rgba(255,92,92,0.3);
+            font-size: 9px;
+            padding: 6px 10px;
+            width: auto;
+        }
+
+        .btn-danger:hover {
+            background: rgba(255,92,92,0.1);
+        }
+
+        .btn-sm {
+            padding: 7px 14px;
+            font-size: 9px;
+            width: auto;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        /* ── TRANSCRIPT BOX ── */
+        .transcript-box {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--neon);
+            min-height: 80px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .transcript-box textarea {
+            background: transparent;
+            border: none;
+            padding: 0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            min-height: 70px;
+            line-height: 1.6;
+        }
+
+        .transcript-box textarea:focus {
+            border: none;
+            box-shadow: none;
+        }
+
+        /* ── CONFIDENCE BAR ── */
+        .confidence-wrap {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .confidence-label {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .confidence-bar-bg {
+            height: 4px;
+            background: var(--bg);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-dim), var(--neon));
+            border-radius: 2px;
+            transition: width 0.6s ease;
+            box-shadow: 0 0 8px var(--neon);
+        }
+
+        /* ── RECORDS LIST ── */
+        .search-bar {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-bar input {
+            padding-left: 36px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .records-scroll {
+            max-height: 560px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .record-card {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .record-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--neon-dim);
+            border-radius: 2px 0 0 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .record-card:hover {
+            border-color: var(--neon-dim);
+            box-shadow: 0 0 12px var(--neon-glow);
+        }
+
+        .record-card:hover::before { opacity: 1; }
+
+        .record-card.today {
+            border-color: rgba(184,245,176,0.35);
+        }
+
+        .record-card.today::before { opacity: 1; }
+
+        .record-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .record-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--neon-bright);
+            letter-spacing: 1px;
+        }
+
+        .record-meta {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .tag {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1px;
+            padding: 2px 7px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .tag.today-tag {
+            border-color: rgba(184,245,176,0.4);
+            color: var(--neon);
+            background: var(--neon-glow);
+        }
+
+        .record-diag {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .record-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .record-date {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(5,10,5,0.85);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg2);
+            border: 1px solid var(--border-bright);
+            border-radius: 16px;
+            padding: 32px;
+            width: 90%;
+            max-width: 560px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 60px var(--neon-glow);
+        }
+
+        .modal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon), transparent);
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--neon-bright);
+            letter-spacing: 3px;
+            margin-bottom: 24px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 18px; right: 18px;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 30px; height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--neon);
+            border-color: var(--neon-dim);
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 8px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: start;
+        }
+
+        .detail-key {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            padding-top: 2px;
+        }
+
+        .detail-val {
+            font-size: 13px;
+            color: var(--neon);
+            line-height: 1.5;
+        }
+
+        .pill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .pill {
+            background: var(--neon-glow);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 3px 10px;
+            font-size: 11px;
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--neon);
+        }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 2000;
+            background: var(--bg2);
+            border: 1px solid var(--neon-dim);
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--neon);
+            box-shadow: 0 0 30px var(--neon-glow);
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 320px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+            color: var(--danger);
+            box-shadow: 0 0 20px rgba(255,92,92,0.2);
+        }
+
+        /* ── LOADING ── */
+        .loader {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border);
+            border-top-color: var(--neon);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        .empty-state p {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+
+        /* ── RECORDING INDICATOR ── */
+        .rec-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(255,92,92,0.08);
+            border: 1px solid rgba(255,92,92,0.3);
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .rec-indicator.active { display: flex; }
+
+        .rec-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            animation: pulse-red 1s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .rec-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--danger);
+            letter-spacing: 2px;
+        }
+
+        /* ── DIVIDER ── */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 16px 0;
+        }
+
+        /* ── SCROLL CUSTOM ── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel {
+            animation: fadeInUp 0.4s ease both;
+        }
+
+        .panel:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- HEADER -->
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">⚕</div>
+            <div class="logo-text">
+                <div class="logo-title">E·H·R ASSISTANT</div>
+                <div class="logo-subtitle">ELECTRONIC HEALTH RECORDS · v2.0</div>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-pill">
+                <div class="stat-dot"></div>
+                <span id="totalCount">0 RECORDS</span>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-dot"></div>
+                <span id="todayCount">0 TODAY</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="grid">
+
+        <!-- LEFT PANEL: NEW RECORD -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>New Record</h2>
+                <span class="panel-badge">INPUT</span>
+            </div>
+            <div class="panel-body">
+
+                <!-- AUDIO SECTION -->
+                <div class="section-label">Audio Input</div>
+                <div class="form-group">
+                    <input type="file" id="audioFile" accept="audio/*">
+                </div>
+
+                <div class="rec-indicator" id="recIndicator">
+                    <div class="rec-dot"></div>
+                    <span class="rec-text">PROCESSING AUDIO...</span>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-ghost" onclick="transcribeAudio()">
+                        🎤 <span>TRANSCRIBE</span>
+                    </button>
+                    <button class="btn btn-ghost" onclick="extractFromTranscript()">
+                        ✨ <span>AI EXTRACT</span>
+                    </button>
+                </div>
+
+                <!-- TRANSCRIPT -->
+                <div class="section-label">Transcript</div>
+                <div class="transcript-box form-group">
+                    <textarea id="transcript" placeholder="Paste or transcribe consultation here..."></textarea>
+                </div>
+
+                <!-- CONFIDENCE -->
+                <div class="confidence-wrap" id="confWrap">
+                    <div class="confidence-label">
+                        <span>AI CONFIDENCE</span>
+                        <span id="confVal">0%</span>
+                    </div>
+                    <div class="confidence-bar-bg">
+                        <div class="confidence-bar-fill" id="confBar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- FORM -->
+                <div class="section-label">Patient Info</div>
+                <div class="form-row form-group">
+                    <input type="text" name="patient_name" placeholder="Full Name" id="f_patient_name">
+                    <input type="text" name="age" placeholder="Age" id="f_age">
+                    <input type="text" name="gender" placeholder="Gender" id="f_gender">
+                </div>
+
+                <div class="form-group">
+                    <input type="text" name="doctor_name" placeholder="Doctor Name" id="f_doctor_name">
+                </div>
+
+                <div class="section-label">Clinical Data</div>
+                <div class="form-group">
+                    <textarea name="diagnosis" placeholder="Diagnosis" id="f_diagnosis" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <textarea name="symptoms" placeholder="Symptoms (comma separated)" id="f_symptoms" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <textarea name="treatment" placeholder="Treatment / Prescription (comma separated)" id="f_treatment" rows="2"></textarea>
+                </div>
+
+                <div class="form-row form-group">
+                    <input type="text" name="followup" placeholder="Follow-up" id="f_followup" style="grid-column: span 2">
+                    <input type="text" name="prakriti" placeholder="Prakriti" id="f_prakriti">
+                </div>
+
+                <div class="form-group">
+                    <textarea name="notes" placeholder="Additional Notes" id="f_notes" rows="2"></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveRecord()">
+                    💾 SAVE RECORD
+                </button>
+
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: RECORDS -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Patient Records</h2>
+                <span class="panel-badge" id="recordBadge">0</span>
+            </div>
+            <div class="panel-body">
+
+                <div class="search-bar">
+                    <span class="search-icon">⌕</span>
+                    <input type="text" id="searchInput" placeholder="Search by name or diagnosis..."
+                        oninput="onSearch(this.value)">
+                </div>
+
+                <div class="records-scroll" id="recordsList">
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <p>NO RECORDS FOUND</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModalBtn()">✕</button>
+        <div class="modal-title" id="modalTitle">PATIENT RECORD</div>
+        <div id="modalBody"></div>
+        <div style="margin-top:20px;">
+            <button class="btn btn-danger" id="modalDeleteBtn" onclick="deleteFromModal()">
+                🗑 DELETE RECORD
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+    <span id="toastIcon">✓</span>
+    <span id="toastMsg">Done</span>
+</div>
+
+<script>
+    let currentModalId = null;
+    let allRecords = [];
+    let searchTimeout = null;
+
+    // ── TOAST ──
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
+        const txt = document.getElementById('toastMsg');
+        icon.textContent = type === 'error' ? '✗' : '✓';
+        txt.textContent = msg;
+        t.className = 'toast' + (type === 'error' ? ' error' : '');
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ── TRANSCRIBE ──
+    async function transcribeAudio() {
+        const file = document.getElementById('audioFile').files[0];
+        if (!file) { showToast('Select an audio file first', 'error'); return; }
+
+        const ind = document.getElementById('recIndicator');
+        ind.classList.add('active');
+
+        const formData = new FormData();
+        formData.append('audio', file);
+
+        try {
+            const res = await fetch('/transcribe', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.text) {
+                document.getElementById('transcript').value = data.text;
+                showToast('Transcription complete');
+            } else {
+                showToast(data.error || 'Transcription failed', 'error');
+            }
+        } catch (e) {
+            showToast('Server error', 'error');
+        } finally {
+            ind.classList.remove('active');
+        }
+    }
+
+    // ── EXTRACT ──
+    async function extractFromTranscript() {
+        const transcript = document.getElementById('transcript').value;
+        if (!transcript.trim()) { showToast('Enter a transcript first', 'error'); return; }
+
+        showToast('AI extracting fields...');
+
+        try {
+            const res = await fetch('/extract', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ transcript })
+            });
+            const data = await res.json();
+
+            document.getElementById('f_patient_name').value = data.patient_name || '';
+            document.getElementById('f_age').value = data.age || '';
+            document.getElementById('f_gender').value = data.gender || '';
+            document.getElementById('f_doctor_name').value = data.doctor_name || '';
+            document.getElementById('f_diagnosis').value = data.diagnosis || '';
+            document.getElementById('f_symptoms').value = (data.symptoms || []).join(', ');
+            document.getElementById('f_treatment').value = (data.treatment || []).join(', ');
+            document.getElementById('f_followup').value = data.followup || '';
+            document.getElementById('f_prakriti').value = data.prakriti || '';
+            document.getElementById('f_notes').value = data.notes || '';
+
+            if (data.confidence !== undefined) {
+                const pct = Math.round(data.confidence * 100);
+                document.getElementById('confWrap').style.display = 'block';
+                document.getElementById('confVal').textContent = pct + '%';
+                document.getElementById('confBar').style.width = pct + '%';
+            }
+
+            showToast('Fields extracted successfully');
+        } catch (e) {
+            showToast('Extraction failed', 'error');
+        }
+    }
+
+    // ── SAVE ──
+    async function saveRecord() {
+        const payload = {
+            patient_name: document.getElementById('f_patient_name').value,
+            age: document.getElementById('f_age').value,
+            gender: document.getElementById('f_gender').value,
+            doctor_name: document.getElementById('f_doctor_name').value,
+            diagnosis: document.getElementById('f_diagnosis').value,
+            symptoms: document.getElementById('f_symptoms').value,
+            treatment: document.getElementById('f_treatment').value,
+            followup: document.getElementById('f_followup').value,
+            prakriti: document.getElementById('f_prakriti').value,
+            notes: document.getElementById('f_notes').value
+        };
+
+        if (!payload.patient_name.trim()) {
+            showToast('Patient name is required', 'error');
+            return;
+        }
+
+        try {
+            const res = await fetch('/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (data.status === 'saved') {
+                clearForm();
+                loadRecords();
+                showToast('Record saved successfully');
+            } else {
+                showToast(data.error || 'Save failed', 'error');
+            }
+        } catch (e) {
+            showToast('Server error', 'error');
+        }
+    }
+
+    // ── CLEAR FORM ──
+    function clearForm() {
+        ['f_patient_name','f_age','f_gender','f_doctor_name','f_diagnosis',
+         'f_symptoms','f_treatment','f_followup','f_prakriti','f_notes'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('transcript').value = '';
+        document.getElementById('confWrap').style.display = 'none';
+    }
+
+    // ── LOAD RECORDS ──
+    async function loadRecords() {
+        try {
+            const res = await fetch('/records');
+            allRecords = await res.json();
+            renderRecords(allRecords);
+
+            const today = allRecords.filter(r => r.is_today).length;
+            document.getElementById('totalCount').textContent = allRecords.length + ' RECORDS';
+            document.getElementById('todayCount').textContent = today + ' TODAY';
+            document.getElementById('recordBadge').textContent = allRecords.length;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // ── RENDER RECORDS ──
+    function renderRecords(records) {
+        const container = document.getElementById('recordsList');
+
+        if (!records.length) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">📋</div>
+                    <p>NO RECORDS FOUND</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = records.map(r => `
+            <div class="record-card ${r.is_today ? 'today' : ''}" onclick="openRecord('${r.id}')">
+                <div class="record-top">
+                    <div class="record-name">${r.patient_name || 'Unknown'}</div>
+                    <div class="record-meta">
+                        ${r.is_today ? '<span class="tag today-tag">TODAY</span>' : ''}
+                        ${r.gender ? `<span class="tag">${r.gender}</span>` : ''}
+                        ${r.age ? `<span class="tag">${r.age}y</span>` : ''}
+                    </div>
+                </div>
+                <div class="record-diag">${r.diagnosis || '—'}</div>
+                <div class="record-footer">
+                    <span class="record-date">${r.date || ''} ${r.doctor_name ? '· Dr. ' + r.doctor_name : ''}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ── SEARCH ──
+    function onSearch(val) {
+        clearTimeout(searchTimeout);
+        if (!val.trim()) {
+            renderRecords(allRecords);
+            return;
+        }
+        searchTimeout = setTimeout(async () => {
+            const res = await fetch('/search?q=' + encodeURIComponent(val));
+            const data = await res.json();
+            renderRecords(data);
+        }, 300);
+    }
+
+    // ── MODAL ──
+    async function openRecord(id) {
+        const res = await fetch('/records/' + id);
+        const r = await res.json();
+        if (r.error) { showToast('Record not found', 'error'); return; }
+
+        currentModalId = id;
+        document.getElementById('modalTitle').textContent = r.patient_name?.toUpperCase() || 'PATIENT RECORD';
+
+        const sym = r.symptoms ? r.symptoms.split(/[;,]/).map(s => s.trim()).filter(Boolean) : [];
+        const tre = r.treatment ? r.treatment.split(/[;,]/).map(s => s.trim()).filter(Boolean) : [];
+
+        document.getElementById('modalBody').innerHTML = `
+            ${field('DATE', r.date || '—')}
+            ${field('DOCTOR', r.doctor_name || '—')}
+            ${field('AGE / GENDER', [r.age, r.gender].filter(Boolean).join(' / ') || '—')}
+            ${field('DIAGNOSIS', r.diagnosis || '—')}
+            ${sym.length ? fieldPills('SYMPTOMS', sym) : field('SYMPTOMS', '—')}
+            ${tre.length ? fieldPills('TREATMENT', tre) : field('TREATMENT', '—')}
+            ${r.followup ? field('FOLLOW-UP', r.followup) : ''}
+            ${r.prakriti ? field('PRAKRITI', r.prakriti) : ''}
+            ${r.notes ? field('NOTES', r.notes) : ''}
+        `;
+
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function field(key, val) {
+        return `<div class="detail-row">
+            <div class="detail-key">${key}</div>
+            <div class="detail-val">${val}</div>
+        </div>`;
+    }
+
+    function fieldPills(key, items) {
+        return `<div class="detail-row">
+            <div class="detail-key">${key}</div>
+            <div class="detail-val"><div class="pill-list">${items.map(i => `<span class="pill">${i}</span>`).join('')}</div></div>
+        </div>`;
+    }
+
+    function closeModal(e) {
+        if (e.target === document.getElementById('modalOverlay')) closeModalBtn();
+    }
+
+    function closeModalBtn() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        currentModalId = null;
+    }
+
+    async function deleteFromModal() {
+        if (!currentModalId) return;
+        if (!confirm('Delete this record?')) return;
+
+        const res = await fetch('/records/' + currentModalId, { method: 'DELETE' });
+        const data = await res.json();
+
+        if (data.status === 'deleted') {
+            closeModalBtn();
+            loadRecords();
+            showToast('Record deleted');
+        } else {
+            showToast('Delete failed', 'error');
+        }
+    }
+
+    // ── INIT ──
+    loadRecords();
+</script>
+</body>
+</html>

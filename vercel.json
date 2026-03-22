@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/transcribe",  "destination": "/api/transcribe" },
+    { "source": "/extract",     "destination": "/api/extract" },
+    { "source": "/save",        "destination": "/api/save" },
+    { "source": "/records/:id", "destination": "/api/record" },
+    { "source": "/records",     "destination": "/api/records" },
+    { "source": "/search",      "destination": "/api/search" },
+    { "source": "/(.*)",        "destination": "/public/index.html" }
+  ]
+}

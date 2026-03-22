@@ -1,17 +1,34 @@
+import os
 import json
 import urllib.parse
 from http.server import BaseHTTPRequestHandler
-from _db import get_record_by_id, delete_record
 
+try:
+    from upstash_redis import Redis
+    _redis = Redis(url=os.environ["KV_REST_API_URL"], token=os.environ["KV_REST_API_TOKEN"])
+except Exception:
+    _redis = None
 
-def _parse_id(path: str, query: str) -> str:
+def _r():
+    if _redis is None:
+        raise RuntimeError("Redis not configured")
+    return _redis
+
+def get_record(rid):
+    raw = _r().get(f"ehr:rec:{rid}")
+    if not raw: return None
+    return json.loads(raw) if isinstance(raw, str) else raw
+
+def delete_record(rid):
+    deleted = _r().delete(f"ehr:rec:{rid}")
+    _r().zrem("ehr:index", rid)
+    return deleted > 0
+
+def parse_id(path, query):
     qs = urllib.parse.parse_qs(query)
-    if "id" in qs:
-        return qs["id"][0]
+    if "id" in qs: return qs["id"][0]
     parts = [p for p in path.split("/") if p]
-    if len(parts) >= 2:
-        return parts[-1]
-    return None
+    return parts[-1] if len(parts) >= 2 else None
 
 
 class handler(BaseHTTPRequestHandler):
@@ -19,31 +36,23 @@ class handler(BaseHTTPRequestHandler):
         self._cors(); self.end_headers()
 
     def do_GET(self):
-        rid = _parse_id(self.path, self._query())
-        if not rid:
-            self._json({"error": "id required"}, 400); return
-        rec = get_record_by_id(rid)
-        if rec:
-            self._json(rec)
-        else:
-            self._json({"error": "Record not found"}, 404)
+        rid = parse_id(self.path, self._query())
+        if not rid: self._json({"error": "id required"}, 400); return
+        rec = get_record(rid)
+        self._json(rec) if rec else self._json({"error": "Not found"}, 404)
 
     def do_DELETE(self):
-        rid = _parse_id(self.path, self._query())
-        if not rid:
-            self._json({"error": "id required"}, 400); return
+        rid = parse_id(self.path, self._query())
+        if not rid: self._json({"error": "id required"}, 400); return
         ok = delete_record(rid)
-        if ok:
-            self._json({"status": "deleted"})
-        else:
-            self._json({"error": "Record not found"}, 404)
+        self._json({"status": "deleted"}) if ok else self._json({"error": "Not found"}, 404)
 
     def _query(self):
         return self.path.split("?", 1)[1] if "?" in self.path else ""
 
     def _cors(self):
         self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin",  "*")
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.send_header("Content-Type", "application/json")

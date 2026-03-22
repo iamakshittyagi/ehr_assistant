@@ -1,6 +1,29 @@
+import os
 import json
+import uuid
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler
-from _db import save_record
+
+try:
+    from upstash_redis import Redis
+    _redis = Redis(url=os.environ["KV_REST_API_URL"], token=os.environ["KV_REST_API_TOKEN"])
+except Exception:
+    _redis = None
+
+def _r():
+    if _redis is None:
+        raise RuntimeError("Redis not configured")
+    return _redis
+
+def save_record(data):
+    rid = str(uuid.uuid4())
+    now = datetime.utcnow()
+    data["id"]         = rid
+    data["date"]       = now.strftime("%Y-%m-%d")
+    data["created_at"] = now.isoformat()
+    _r().set(f"ehr:rec:{rid}", json.dumps(data))
+    _r().zadd("ehr:index", {rid: now.timestamp()})
+    return rid
 
 
 class handler(BaseHTTPRequestHandler):
@@ -30,7 +53,7 @@ class handler(BaseHTTPRequestHandler):
 
     def _cors(self):
         self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin",  "*")
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.send_header("Content-Type", "application/json")
